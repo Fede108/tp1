@@ -19,4 +19,8 @@ public class Casillero {
         public void desocupar(){
             Estado--;
         }
+
+        public void setFueraServicio(){
+            Estado = -1;
+        }
 }

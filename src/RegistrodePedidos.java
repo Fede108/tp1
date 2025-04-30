@@ -6,15 +6,27 @@ public class RegistrodePedidos{
 
     public RegistrodePedidos(){
         listaPreparacion = new ArrayList<>();
-        listaTransito = new ArrayList<>();
+        listaTransito    = new ArrayList<>();
     }
 
-    public void add(Pedido pedido){
+    public void addListaPreparacion(Pedido pedido){
         listaPreparacion.add(pedido);
     }
 
+    public Pedido getListaPreparacion(){
+        if (listaPreparacion.size()>1) {
+            Pedido ped = listaPreparacion.getLast();
+            listaPreparacion.removeLast();
+            return ped;
+        } 
+        return null;
+    }
 
-    public Pedido get(){
-        return listaPreparacion.getLast();
+    public void addListaTransito(Pedido pedido){
+        listaTransito.add(pedido);
+    }
+
+    public void print(){
+        System.out.println(listaTransito.size());
     }
 }

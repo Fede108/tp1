@@ -1,5 +1,6 @@
 public class Pedido {
     private Integer casillero;
+    private int Estado;
     public int id;
 
     Pedido(Integer casillero, int id){
@@ -9,5 +10,9 @@ public class Pedido {
 
     public Integer getCasillero(){
         return casillero;
+    }
+
+    public void setFallido(){
+        Estado = -1;
     }
 }
