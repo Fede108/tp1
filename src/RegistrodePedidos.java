@@ -9,17 +9,20 @@ public class RegistrodePedidos{
         listaTransito    = new ArrayList<>();
     }
 
-    public void addListaPreparacion(Pedido pedido){
+    public synchronized void addListaPreparacion(Pedido pedido){
         listaPreparacion.add(pedido);
+        notifyAll();
     }
 
-    public Pedido getListaPreparacion(){
-        if (listaPreparacion.size()>1) {
-            Pedido ped = listaPreparacion.getLast();
-            listaPreparacion.removeLast();
-            return ped;
-        } 
-        return null;
+    public synchronized Pedido getListaPreparacion(){
+        while (listaPreparacion.isEmpty()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return listaPreparacion.removeLast();        
     }
 
     public void addListaTransito(Pedido pedido){

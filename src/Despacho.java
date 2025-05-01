@@ -6,31 +6,37 @@ public class Despacho implements Runnable{
     int pedidosCompletados;
 
     public Despacho(SistemaAlmacenamiento sistema, RegistrodePedidos pedidos){
-        this.sistema    = sistema;
-        Registropedidos = pedidos;
+        this.sistema       = sistema;
+        Registropedidos    = pedidos;
         pedidosCompletados = 0;
     }
 
     public void despacharPedido(){
         Pedido pedido = Registropedidos.getListaPreparacion();
-        if (pedido != null) {
-            Random rnd    = new Random();
-            if (rnd.nextInt(100) < 15) {
-                sistema.setCasilleroFueraServicio(pedido);
-                pedido.setFallido();
-            }else{
-                Registropedidos.addListaTransito(pedido);
-                sistema.desocuparCasillero(pedido);
-            }
+        Random rnd    = new Random();
+        
+        if (rnd.nextInt(100) < 15) {
+            sistema.setCasilleroFueraServicio(pedido);
+            pedido.setFallido();
+        }else{
+            Registropedidos.addListaTransito(pedido);
+            sistema.desocuparCasillero(pedido);
         }
     }
         
+    public synchronized int pedidoActual() {
+        return pedidosCompletados;
+    }
+
+    public synchronized void siguientePedido() {
+         pedidosCompletados++;
+    }
 
     @Override
     public void run() {
-        while (pedidosCompletados<5) {
+        while (pedidoActual()<sistema.getTotalPedidos()) {
             despacharPedido();
-            pedidosCompletados++;
+            siguientePedido();
         }
 
         System.out.println(pedidosCompletados);
