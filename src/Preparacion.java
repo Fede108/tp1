@@ -15,20 +15,14 @@ public class Preparacion implements Runnable{
         Registropedidos.addListaPreparacion(pedido);   
     }
 
-    public synchronized int pedidoActual() {
-        return pedidosCompletados;
+    public synchronized int siguientePedido() {
+        return ++pedidosCompletados;
     }
-
-    public synchronized void siguientePedido() {
-         pedidosCompletados++;
-    }
-
 
     @Override
     public void run() {
-       while (pedidoActual()<sistema.getTotalPedidos()) {
+       while (siguientePedido()<sistema.getTotalPedidos()) {
             prepararPedido();
-            siguientePedido();
        } 
     }
 }

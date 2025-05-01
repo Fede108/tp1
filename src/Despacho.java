@@ -23,20 +23,28 @@ public class Despacho implements Runnable{
             sistema.desocuparCasillero(pedido);
         }
     }
+    
         
-    public synchronized int pedidoActual() {
-        return pedidosCompletados;
+    public synchronized int siguientePedido() {
+        if (pedidosCompletados<sistema.getTotalPedidos()) {
+            return ++pedidosCompletados;
+        }
+        else{
+            return pedidosCompletados;
+        }
     }
 
-    public synchronized void siguientePedido() {
-         pedidosCompletados++;
-    }
 
     @Override
     public void run() {
-        while (pedidoActual()<sistema.getTotalPedidos()) {
+        while (siguientePedido()<sistema.getTotalPedidos()) {
             despacharPedido();
-            siguientePedido();
+        }
+  
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         System.out.println(pedidosCompletados);

@@ -25,7 +25,7 @@ public class RegistrodePedidos{
         return listaPreparacion.removeLast();        
     }
 
-    public void addListaTransito(Pedido pedido){
+    public synchronized void addListaTransito(Pedido pedido){
         listaTransito.add(pedido);
     }
 
