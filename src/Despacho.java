@@ -23,7 +23,7 @@ public class Despacho implements Runnable{
             sistema.desocuparCasillero(pedido);
         }
     }
-    
+
         
     public synchronized int siguientePedido() {
         if (pedidosCompletados<sistema.getTotalPedidos()) {
@@ -47,6 +47,10 @@ public class Despacho implements Runnable{
             e.printStackTrace();
         }
 
+     //   print();
+    }
+
+    public void print(){
         System.out.println(pedidosCompletados);
         Registropedidos.print();
     }
