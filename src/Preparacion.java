@@ -7,7 +7,7 @@ public class Preparacion implements Runnable{
     public Preparacion(SistemaAlmacenamiento sistema, RegistrodePedidos pedidos){
         this.sistema       = sistema;
         Registropedidos    = pedidos;
-        pedidosCompletados = 0;
+        pedidosCompletados = -1;
     }
 
     public void prepararPedido(){

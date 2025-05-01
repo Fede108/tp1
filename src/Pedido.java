@@ -15,4 +15,8 @@ public class Pedido {
     public void setFallido(){
         Estado = -1;
     }
+
+    public String toString() {
+        return "Pedido #" + id;
+    }
 }
