@@ -22,9 +22,8 @@ public class SistemaAlmacenamiento {
 
     public synchronized Pedido ocuparCasillero() 
     {
-       
-        Random rnd       = new Random();
-        int nroCasillero = rnd.nextInt(5);
+        int nroCasillero;
+        Casillero casillero;
 
         while (casillerosVisitados.size() == 5) 
         {
@@ -35,25 +34,18 @@ public class SistemaAlmacenamiento {
                 e.printStackTrace();
             }
         }
-        
-        while (casillerosVisitados.containsKey(nroCasillero)) 
-        {
-            nroCasillero = rnd.nextInt(5);
-        }
-   
-        Casillero casillero = matriz.get(nroCasillero);    
-        casillerosVisitados.put(nroCasillero, casillero);
 
-        if (!casillero.estaVacio()) 
-        {
-            ocuparCasillero();  // Llamada recursiva para intentar llenar otro casillero
-          
-        } 
-     
-        cantPedidos++;
+        do {
+            nroCasillero = new Random().nextInt(5);
+            casillero    = matriz.get(nroCasillero);
+        } while (casillerosVisitados.containsKey(nroCasillero) || !casillero.estaVacio());
+        
+
+        casillerosVisitados.put(nroCasillero, casillero);
         casillero.ocupar();
+        
         System.out.printf("Thread '%s': casillero ocupado \n", Thread.currentThread().getName());
-        return new Pedido(nroCasillero, cantPedidos);
+        return new Pedido(nroCasillero, ++cantPedidos);
     }
 
 
