@@ -12,7 +12,6 @@ public class Main {
       new Thread(preparacion),
       new Thread(despacho),
       new Thread(preparacion),
-      new Thread(despacho)
     };
 
     for (Thread t : hilos) {
@@ -26,6 +25,7 @@ public class Main {
         e.printStackTrace();
       }
     }
+    
     
     despacho.print();
     

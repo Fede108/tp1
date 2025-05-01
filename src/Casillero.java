@@ -11,6 +11,10 @@ public class Casillero {
             return Estado == 0 ;
         }
 
+        public boolean estaFueraServicio(){
+            return Estado == -1 ;
+        }
+        
         public void ocupar(){
             Estado++;
             Contador++;

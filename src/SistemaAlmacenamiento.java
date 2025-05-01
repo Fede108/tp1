@@ -10,10 +10,12 @@ public class SistemaAlmacenamiento {
     private Integer cantPedidos;
     private Integer totalPedidos;
 
+    private static final int N_CASILLEROS = 8; 
+
     SistemaAlmacenamiento(Integer totalPedidos)
     {
-        matriz = new ArrayList<>(5);
-        for (int i = 0; i < 5; i++) {
+        matriz = new ArrayList<>(N_CASILLEROS);
+        for (int i = 0; i < N_CASILLEROS; i++) {
             matriz.add(new Casillero());
         }
         cantPedidos = 0;
@@ -26,10 +28,9 @@ public class SistemaAlmacenamiento {
         int nroCasillero;
         Casillero casillero;
 
-        while (casillerosVisitados.size() == 5) 
+        while (casillerosVisitados.size() == N_CASILLEROS) 
         {
             log("CASILLEROS_LLENOS", null);
-        //    System.out.printf("Thread '%s': casilleros llenos \n", Thread.currentThread().getName());
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -38,16 +39,14 @@ public class SistemaAlmacenamiento {
         }
 
         do {
-            nroCasillero = new Random().nextInt(5);
+            nroCasillero = new Random().nextInt(N_CASILLEROS);
             casillero    = matriz.get(nroCasillero);
-        } while (casillerosVisitados.containsKey(nroCasillero) || !casillero.estaVacio());
+        } while (casillerosVisitados.containsKey(nroCasillero) || !casillero.estaVacio() || casillero.estaFueraServicio());
         
 
         casillerosVisitados.put(nroCasillero, casillero);
         casillero.ocupar();
 
-        
-     //   System.out.printf("Thread '%s': casillero ocupado \n", Thread.currentThread().getName());
         Pedido pedido = new Pedido(nroCasillero, ++cantPedidos);
         log("OCUPAR_CASILLERO  ", pedido);
         return pedido;
@@ -59,12 +58,15 @@ public class SistemaAlmacenamiento {
         casillerosVisitados.remove(pedido.getCasillero());
         log("CASILLERO_LIBERADO", pedido);
      //   System.out.printf("Thread '%s': casilleros desocupado \n", Thread.currentThread().getName());
-        notifyAll();
+        notify();
     }
 
     public synchronized void setCasilleroFueraServicio(Pedido pedido)
     {
         matriz.get(pedido.getCasillero()).setFueraServicio();
+      //  casillerosVisitados.remove(pedido.getCasillero());
+        log("PEDIDO_FALLIDO    ", pedido);
+      //  notify();
     }
 
     public Integer getTotalPedidos(){

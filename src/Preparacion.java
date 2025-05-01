@@ -7,7 +7,7 @@ public class Preparacion implements Runnable{
     public Preparacion(SistemaAlmacenamiento sistema, RegistrodePedidos pedidos){
         this.sistema       = sistema;
         Registropedidos    = pedidos;
-        pedidosCompletados = -1;
+        pedidosCompletados = 0;
     }
 
     public void prepararPedido(){
@@ -16,13 +16,13 @@ public class Preparacion implements Runnable{
     }
 
     public synchronized int siguientePedido() {
-        return ++pedidosCompletados;
+        return pedidosCompletados++;
     }
 
     @Override
     public void run() {
-       while (siguientePedido()<sistema.getTotalPedidos()) {
-            prepararPedido();
+        while (siguientePedido()<sistema.getTotalPedidos()) {
+               prepararPedido();
        } 
     }
 }

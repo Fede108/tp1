@@ -8,7 +8,7 @@ public class Despacho implements Runnable{
     public Despacho(SistemaAlmacenamiento sistema, RegistrodePedidos pedidos){
         this.sistema       = sistema;
         Registropedidos    = pedidos;
-        pedidosCompletados = -1;
+        pedidosCompletados = 0;
     }
 
     public void despacharPedido(){
@@ -19,39 +19,32 @@ public class Despacho implements Runnable{
             sistema.setCasilleroFueraServicio(pedido);
             pedido.setFallido();
         }else{
-            Registropedidos.addListaTransito(pedido);
             sistema.desocuparCasillero(pedido);
+            Registropedidos.addListaTransito(pedido);
         }
     }
 
-        
     public synchronized int siguientePedido() {
         if (pedidosCompletados<sistema.getTotalPedidos()) {
-            return ++pedidosCompletados;
+            return pedidosCompletados++;
         }
         else{
             return pedidosCompletados;
         }
     }
 
-
     @Override
     public void run() {
         while (siguientePedido()<sistema.getTotalPedidos()) {
             despacharPedido();
         }
-  
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
 
      //   print();
     }
 
     public void print(){
-        System.out.println(pedidosCompletados);
+        System.out.printf( "\nCantidad pedidos preparados  %d\n" , pedidosCompletados);
         Registropedidos.print();
     }
 }
