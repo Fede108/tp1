@@ -1,0 +1,16 @@
+[8 ms]  Pedidos despachados: 0
+[62 ms]  Pedidos despachados: 0
+[72 ms]  Pedidos despachados: 0
+[82 ms]  Pedidos despachados: 0
+[93 ms]  Pedidos despachados: 0
+[103 ms]  Pedidos despachados: 0
+[114 ms]  Pedidos despachados: 0
+[124 ms]  Pedidos despachados: 0
+[135 ms]  Pedidos despachados: 0
+[145 ms]  Pedidos despachados: 0
+[155 ms]  Pedidos despachados: 0
+[166 ms]  Pedidos despachados: 6
+[176 ms]  Pedidos despachados: 7
+[188 ms]  Pedidos despachados: 14
+[198 ms]  Pedidos despachados: 16
+[198 ms]  Casilleros fallidos: 4

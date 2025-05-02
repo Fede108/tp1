@@ -44,4 +44,8 @@ public class RegistrodePedidos{
     public void print(){
         System.out.println(listaTransito.size());
     }
+
+    public int sizeListaTransito(){
+        return listaTransito.size();
+    }
 }

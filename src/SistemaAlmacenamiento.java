@@ -73,6 +73,27 @@ public class SistemaAlmacenamiento {
         return totalPedidos;
     }
 
+    public Integer getCasillerosFallidos(){
+        Integer fallidos = 0;
+        for (int i = 0; i < N_CASILLEROS; i++) {
+            if(matriz.get(i).estaFueraServicio()){
+                fallidos++;
+            }
+        }
+        return fallidos;
+    }
+
+    public Integer getCasillerosFuncionales(){
+        Integer funcionando = 0;
+        for (int i = 0; i < N_CASILLEROS; i++) {
+            if(matriz.get(i).estaFueraServicio()){
+                funcionando++;
+            }
+        }
+        return funcionando;
+    }
+
+
     private void log(String accion, Pedido pedido) {
         String msg = String.format("%1$tF %1$tT.%1$tL [%2$s] %3$s %4$s",
             new Date(),
