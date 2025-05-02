@@ -9,7 +9,7 @@ import java.io.IOException;
  * interactúan mediante estructuras sincronizadas (casilleros y registros de pedidos).
  * El estado del sistema se registra periódicamente en un archivo de salida.
  *
- * @author TuNombre
+ * @author 
  */
 public class Main {
 
