@@ -2,90 +2,105 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-
+/**
+ * Clase principal que inicia el sistema de almacenamiento y gestión de pedidos.
+ * 
+ * Se crean hilos concurrentes para preparar y despachar pedidos, los cuales
+ * interactúan mediante estructuras sincronizadas (casilleros y registros de pedidos).
+ * El estado del sistema se registra periódicamente en un archivo de salida.
+ *
+ * @author TuNombre
+ */
 public class Main {
-    public static void main(String[] args) {
-    long startTime = System.currentTimeMillis();
 
-		SistemaAlmacenamiento sistemaAlmacenamiento = new SistemaAlmacenamiento(20);
-    RegistrodePedidos     registrodePedidos     = new RegistrodePedidos();
-    Preparacion preparacion                     = new Preparacion(sistemaAlmacenamiento, registrodePedidos);
-    Despacho    despacho                        = new Despacho   (sistemaAlmacenamiento, registrodePedidos);
-      
-    Thread[] hilos = {
-      new Thread(preparacion),
-      new Thread(despacho),
-      new Thread(preparacion),
-      new Thread(despacho),
-      new Thread(preparacion),
-    };
+  /**
+   * Punto de entrada del programa. Inicializa el sistema, lanza hilos productores
+   * y consumidores, y registra el estado del sistema hasta que todos los hilos finalicen.
+   *
+   * @param args Argumentos de línea de comandos (no utilizados).
+   */
+  public static void main(String[] args) {
+      long startTime = System.currentTimeMillis();
 
-    for (Thread t : hilos) {
-      t.start();
-    }
+      SistemaAlmacenamiento sistemaAlmacenamiento = new SistemaAlmacenamiento(200);
+      RegistrodePedidos registrodePedidos = new RegistrodePedidos();
+      Preparacion preparacion = new Preparacion(sistemaAlmacenamiento, registrodePedidos);
+      Despacho despacho = new Despacho(sistemaAlmacenamiento, registrodePedidos);
 
-    BufferedWriter writer = null;
-    try {
-      writer = new BufferedWriter(new FileWriter("registro.txt"));
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+      Thread[] hilos = {
+          new Thread(preparacion),
+          new Thread(despacho),
+          new Thread(preparacion),
+          new Thread(despacho),
+          new Thread(preparacion),
+      };
 
-    boolean algunoVivo = true;
+      for (Thread t : hilos) {
+          t.start();
+      }
 
-    while (algunoVivo) {
-      for (Thread thread : hilos) {
-        algunoVivo = false;
-        if (thread.isAlive()) 
-          {
-            algunoVivo = true;
+      BufferedWriter writer = null;
+      try {
+          writer = new BufferedWriter(new FileWriter("registro.txt"));
+      } catch (IOException e) {
+          e.printStackTrace();
+      }
+
+      boolean algunoVivo = true;
+
+      while (algunoVivo) {
+          algunoVivo = false;
+          for (Thread thread : hilos) {
+              if (thread.isAlive()) {
+                  algunoVivo = true;
+              }
+          }
+
+          Registro(startTime, sistemaAlmacenamiento, registrodePedidos, writer, false);
+          try {
+              Thread.sleep(10);
+          } catch (InterruptedException e) {
+              e.printStackTrace();
           }
       }
-      
-      Registro(startTime, sistemaAlmacenamiento, registrodePedidos, writer, false);
+
+      Registro(startTime, sistemaAlmacenamiento, registrodePedidos, writer, true);
+      despacho.print();
+  }
+
+  /**
+   * Registra información del estado actual del sistema en un archivo de texto.
+   * 
+   * @param startTime Tiempo de inicio del programa en milisegundos.
+   * @param sistema Referencia al sistema de almacenamiento.
+   * @param registro Registro de pedidos en transcurso y completados.
+   * @param writer Objeto de escritura a archivo.
+   * @param lineaFinal Si es true, imprime la línea de cierre con casilleros fallidos.
+   */
+  public static void Registro(long startTime, SistemaAlmacenamiento sistema,
+                               RegistrodePedidos registro, BufferedWriter writer,
+                               boolean lineaFinal) {
+      long programTime = System.currentTimeMillis() - startTime;
+      String prefix = String.format("[%03d ms] ", programTime);
+
       try {
-        Thread.sleep(10);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-    
-
-    for (Thread t : hilos) {
-      try {
-        t.join();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-    
-    Registro(startTime, sistemaAlmacenamiento, registrodePedidos, writer, true);
-    despacho.print();
-    
-	}
-
-  public static void Registro(long startTime, SistemaAlmacenamiento sistema, RegistrodePedidos registro, BufferedWriter writer, boolean lineaFinal) {
-    long programTime = System.currentTimeMillis() - startTime;
-    String prefix = "[" + programTime + " ms] ";  
-
-    
-    try {
-        String linea = prefix + " Pedidos despachados: " + registro.sizeListaTransito();
-        writer.write(linea);
-        writer.newLine();
-        writer.flush();
-      } catch (IOException e){
-        e.printStackTrace();
-      }
-      if (lineaFinal) {
-        try {
-          String linea = prefix + " Casilleros fallidos: " + sistema.getCasillerosFallidos();
+          String linea = prefix + " Pedidos despachados: " + registro.sizeListaTransito();
           writer.write(linea);
           writer.newLine();
           writer.flush();
-        } catch (IOException e){
+      } catch (IOException e) {
           e.printStackTrace();
-        }
+      }
+
+      if (lineaFinal) {
+          try {
+              String linea = prefix + " Casilleros fallidos: " + sistema.getCasillerosFallidos();
+              writer.write(linea);
+              writer.newLine();
+              writer.flush();
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
       }
   }
 }

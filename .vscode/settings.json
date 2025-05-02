@@ -1,7 +1,41 @@
 {
-    "java.project.sourcePaths": ["src"],
-    "java.project.outputPath": "bin",
-    "java.project.referencedLibraries": [
-        "lib/**/*.jar"
+    "workbench.colorTheme": "Black",
+    "editor.tokenColorCustomizations": {
+      "textMateRules": [
+        {
+          "scope": [
+            "comment",
+            "punctuation.definition.comment"
+          ],
+          "settings": {
+            "foreground": "#5c6573"        // comentarios más tenues
+          }
+        },
+        {
+          "scope": "keyword",
+          "settings": {
+            "foreground": "#c678dd"        // morado vibrante
+          }
+        },
+        {
+          "scope": "entity.name.function",
+          "settings": {
+            "foreground": "#61afef"        // azul cielo
+          }
+        },
+        {
+          "scope": "variable",
+          "settings": {
+            "foreground": "#e5c07b"        // amarillo suave
+          }
+        }
+      ]
+    },
+    "workbench.colorCustomizations": {
+      "editor.background": "#0e1013"      // fondo casi negro
+    },
+    "java.project.sourcePaths": [
+        "src"
     ]
-}
+  }
+  
