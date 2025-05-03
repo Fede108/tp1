@@ -1,30 +1,33 @@
 public class Casillero {
-        int Estado;
+        private EstadoCasillero estado;
         int Contador;
 
         Casillero(){
-            Estado   = 0;
+            estado   = EstadoCasillero.VACIO;
             Contador = 0;
         }
 
         public boolean estaVacio(){
-            return Estado == 0 ;
+            return estado == EstadoCasillero.VACIO; 
         }
 
         public boolean estaFueraServicio(){
-            return Estado == -1 ;
+            return estado == EstadoCasillero.FUERA_DE_SERVICIO ;
         }
         
         public void ocupar(){
-            Estado++;
+            estado = EstadoCasillero.OCUPADO;
             Contador++;
         }
 
         public void desocupar(){
-            Estado--;
+            estado = EstadoCasillero.VACIO;
         }
 
         public void setFueraServicio(){
-            Estado = -1;
+            estado = EstadoCasillero.FUERA_DE_SERVICIO;
+        }
+        public EstadoCasillero getEstado() {
+            return estado;
         }
 }
