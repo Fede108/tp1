@@ -7,13 +7,13 @@ import java.util.ArrayList;
 public class RegistrodePedidos {
     private ArrayList<Pedido> listaPreparacion;
     private ArrayList<Pedido> listaTransito;
-    private ArrayList<Pedido> listaEntrega;
-    private ArrayList<Pedido> listaFallados;
+    private ArrayList<Pedido> listaEntregados;
+    private ArrayList<Pedido> listaFallidos;
 
     private final Object lockPreparacion = new Object();
     private final Object lockTransito    = new Object();
-    private final Object lockEntrega     = new Object();
-    private final Object lockFalla       = new Object(); 
+    private final Object lockEntregados  = new Object();
+    private final Object lockFallidos    = new Object(); 
 
     /**
      * Constructor que inicializa las listas y los objetos de sincronización.
@@ -21,8 +21,8 @@ public class RegistrodePedidos {
     public RegistrodePedidos( ) {
         listaPreparacion = new ArrayList<>();
         listaTransito    = new ArrayList<>();
-        listaEntrega     = new ArrayList<>();
-        listaFallados    = new ArrayList<>();
+        listaEntregados  = new ArrayList<>();
+        listaFallidos    = new ArrayList<>();
     }
 
     /**
@@ -88,9 +88,9 @@ public class RegistrodePedidos {
      * Agrega un pedido a la lista de entrega.
      * @param pedido el pedido que ha sido entregado.
      */
-    public void addListaEntregado(Pedido pedido) {
-        synchronized(lockEntrega) {
-            listaEntrega.add(pedido);
+    public void addListaEntregados(Pedido pedido) {
+        synchronized(lockEntregados){            
+        listaEntregados.add(pedido);
         }   
     }
 
@@ -99,8 +99,8 @@ public class RegistrodePedidos {
      * @param pedido el pedido que ha fallado.
      */
     public void addListaFallado(Pedido pedido) {
-        synchronized(lockFalla) {
-            listaFallados.add(pedido);
+        synchronized(lockFallidos) {
+            listaFallidos.add(pedido);
         }   
     }
 
@@ -108,9 +108,9 @@ public class RegistrodePedidos {
      * Imprime la cantidad de pedidos en tránsito.
      */
     public void print() {
-        System.out.println(listaTransito.size());
-        System.out.println(listaFallados.size());
-        System.out.println(listaEntrega.size());
+        System.out.printf("\nCantidad pedidos en transito  %d\n ",listaTransito.size());
+        System.out.printf("\nCantidad pedidos en fallidos  %d\n ",listaFallidos.size());
+        System.out.printf("\nCantidad pedidos en entregados  %d\n ",listaEntregados.size());
     }
 
     /**

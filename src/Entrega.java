@@ -31,7 +31,7 @@ public class Entrega implements Runnable {
             pedido.setFallido();
             Registropedidos.addListaFallado(pedido);
         } else {
-            Registropedidos.addListaEntregado(pedido);
+            Registropedidos.addListaEntregados(pedido);
         }
 
         return true;

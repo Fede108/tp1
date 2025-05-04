@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Clase Despacho que simula el rol de consumidor.
@@ -7,7 +8,7 @@ import java.util.Random;
 public class Despacho implements Runnable {
     private SistemaAlmacenamiento sistema;
     private RegistrodePedidos Registropedidos;
-    int pedidosCompletados;
+    private AtomicInteger pedidosCompletados = new AtomicInteger(0);
 
     /**
      * Constructor.
@@ -17,7 +18,6 @@ public class Despacho implements Runnable {
     public Despacho(SistemaAlmacenamiento sistema, RegistrodePedidos pedidos) {
         this.sistema = sistema;
         this.Registropedidos = pedidos;
-        this.pedidosCompletados = 0;
     }
 
     /**
@@ -41,16 +41,14 @@ public class Despacho implements Runnable {
      * Método sincronizado para incrementar y devolver el número de pedido procesado.
      * @return número del siguiente pedido a procesar o el total si ya se completó.
      */
-    public synchronized int siguientePedido() {
-        if (pedidosCompletados < sistema.getTotalPedidos()) {
-            return pedidosCompletados++;
-        } else {     
-            return pedidosCompletados;
+    public int siguientePedido() {
+        int pedido;
+        if (pedidosCompletados.get() < sistema.getTotalPedidos()) {
+            pedido = pedidosCompletados.getAndIncrement();
+            return pedido;
+        } else {
+            return sistema.getTotalPedidos(); // o -1 si querés evitar que se repita
         }
-    }
-
-    public synchronized int pedidoActual(){
-        return pedidosCompletados;
     }
 
     /**
@@ -61,14 +59,15 @@ public class Despacho implements Runnable {
         while (siguientePedido() < sistema.getTotalPedidos()) {
             despacharPedido();
         }
-        Pedido pedidoPoison = new Pedido(null, pedidosCompletados);
+
+        Pedido pedidoPoison = new Pedido(null, -1);
         pedidoPoison.setPoisonPill();
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
         Registropedidos.addListaTransito(pedidoPoison);
     }
 
@@ -76,7 +75,7 @@ public class Despacho implements Runnable {
      * Imprime estadísticas y registros de pedidos.
      */
     public void print() {
-        System.out.printf("\nCantidad pedidos preparados  %d\n", pedidosCompletados);
+        System.out.printf("\nCantidad pedidos preparados  %d\n", pedidosCompletados.get());
         Registropedidos.print();
     }
 }

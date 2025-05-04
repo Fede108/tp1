@@ -12,7 +12,6 @@ public class SistemaAlmacenamiento {
     private HashMap<Integer, Casillero> casillerosVisitados;
     private Integer cantPedidos;
     private Integer totalPedidos;
-    private boolean pedidosCompletados = false;
 
     private static final int N_CASILLEROS = 8;
 
@@ -66,7 +65,6 @@ public class SistemaAlmacenamiento {
 
             Pedido pedido = new Pedido(nroCasillero, ++cantPedidos);
             log("CASILLERO_OCUPADO ", pedido);
-            if (cantPedidos == totalPedidos) { pedidosCompletados = true;}
             return pedido;
         }
     }
@@ -101,10 +99,6 @@ public class SistemaAlmacenamiento {
      */
     public Integer getTotalPedidos() {
         return totalPedidos;
-    }
-
-    public boolean pedidosCompletados(){
-        return pedidosCompletados;
     }
 
     /**
