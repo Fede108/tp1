@@ -50,6 +50,7 @@ public class RegistrodePedidos {
         try{
             listaPreparacion.add(pedido);
             listaLibre.signalAll();
+    //        System.out.printf("\n PEDIDO_AGREGADO \n ");
         }finally{
             lockPrep.unlock();
         }
@@ -129,7 +130,12 @@ public class RegistrodePedidos {
         lockEntreg.lock();
         try {
             while (listaEntregados.isEmpty()) {
-                condEntreg.awaitUninterruptibly();
+                try {
+                    condEntreg.await();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
             return listaEntregados.remove(listaEntregados.size() - 1);
         } finally {
@@ -155,8 +161,8 @@ public class RegistrodePedidos {
      */
     public void print() {
         System.out.printf("\nCantidad pedidos en transito  %d\n ",listaTransito.size());
-        System.out.printf("\nCantidad pedidos en fallidos  %d\n ",listaFallidos.size());
-        System.out.printf("\nCantidad pedidos en entregados  %d\n ",listaEntregados.size());
+        System.out.printf("\nCantidad pedidos fallidos  %d\n ",listaFallidos.size());
+        System.out.printf("\nCantidad pedidos entregados  %d\n ",listaEntregados.size());
     }
 
     /**

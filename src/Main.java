@@ -36,6 +36,7 @@ public class Main {
           new Thread(entrega),
           new Thread(entrega),
           new Thread(preparacion),
+          new Thread(entrega),
       };
 
       for (Thread t : hilos) {

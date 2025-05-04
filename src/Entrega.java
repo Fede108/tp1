@@ -3,7 +3,7 @@ import java.util.Random;
 
 public class Entrega implements Runnable {
     private RegistrodePedidos Registropedidos;
-
+    private boolean finalizacion = false;
 
     /**
      * Constructor.
@@ -17,15 +17,16 @@ public class Entrega implements Runnable {
     /**
      * Entrega un pedido, liberando el casillero o marcándolo como fuera de servicio en caso de error.
      */
-    public boolean entregaPedido() {
+    public void entregaPedido() {
         Pedido pedido = Registropedidos.getListaTransito();
         if (pedido.pedidoPoison()) {
-            return false;
+            Registropedidos.addListaTransito(pedido);
+            finalizacion = true;
         }
 
         Random rnd = new Random();
 
-        if (rnd.nextInt(100) < 5) { // 10% de fallas
+        if (rnd.nextInt(100) < 10) { // 10% de fallas
             pedido.setFallido();
             Registropedidos.addListaFallidos(pedido);
             log("PEDIDO_FALLIDO", pedido);
@@ -34,7 +35,6 @@ public class Entrega implements Runnable {
             log("PEDIDO_ENTREGADO", pedido);
         }
 
-        return true;
     }
 
 
@@ -58,17 +58,17 @@ public class Entrega implements Runnable {
      */
     @Override
     public void run() {
-        while (true){
+        while (!finalizacion){
+            entregaPedido();
             try {
-                Thread.sleep(1300);
+                Thread.sleep(0);
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            if ( ! entregaPedido()) {
-                break;
-            }
         }
+
+        log("finalizacion", null);
     }
 
 }

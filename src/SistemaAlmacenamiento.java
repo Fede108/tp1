@@ -15,7 +15,7 @@ public class SistemaAlmacenamiento {
     private Integer cantPedidos;
     private Integer totalPedidos;
 
-    private static final int N_CASILLEROS = 12;
+    private static final int N_CASILLEROS = 5;
 
     // Objeto lock dedicado para las secciones críticas
    // private final Object lockCasillero = new Object();
@@ -67,13 +67,17 @@ public class SistemaAlmacenamiento {
                     casillero.ocupar();
                     break;
                 }
-              
-                if (casillero.estaFueraServicio()) {
-                    casillerosFueraServicios++;
+
+                for (int i = 0; i < N_CASILLEROS; i++) {
+                    if (matriz.get(i).estaFueraServicio()) {
+                        casillerosFueraServicios++;
+                    }
                 }
                 if (casillerosFueraServicios == N_CASILLEROS) {
-                    log("CASILLEROS OUT OF SERVICE", null);
-                }
+                   log("CASILLEROS OUT OF SERVICE", null);
+                } 
+                    casillerosFueraServicios = 0;
+                
             }
 
             Pedido pedido = new Pedido(nroCasillero, ++cantPedidos);
@@ -118,7 +122,7 @@ public class SistemaAlmacenamiento {
                 matriz.get(pedido.getCasillero()).setFueraServicio();
                 log("PEDIDO_FALLIDO   ", pedido);
                 System.err.println(pedido.getCasillero());
-                casillerosVisitados.remove(pedido.getCasillero());    
+           //     casillerosVisitados.remove(pedido.getCasillero());    
             } catch (Exception e) {
                 // TODO: handle exception
             } finally{
