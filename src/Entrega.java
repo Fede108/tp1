@@ -1,3 +1,4 @@
+import java.util.Date;
 import java.util.Random;
 
 public class Entrega implements Runnable {
@@ -26,15 +27,33 @@ public class Entrega implements Runnable {
 
         Random rnd = new Random();
 
-        if (rnd.nextInt(100) < 2) { // 10% de fallas
+        if (rnd.nextInt(100) < 5) { // 10% de fallas
+            sistema.getlockCasillero();
             sistema.setCasilleroFueraServicio(pedido);
             pedido.setFallido();
-            Registropedidos.addListaFallado(pedido);
+            Registropedidos.addListaFallidos(pedido);
+            log("PEDIDO_FALLIDO", pedido);
         } else {
             Registropedidos.addListaEntregados(pedido);
+            log("PEDIDO_ENTREGADO", pedido);
         }
 
         return true;
+    }
+
+
+    /**
+     * Registra en consola información sobre acciones realizadas en el sistema.
+     * @param accion Descripción de la acción.
+     * @param pedido Pedido involucrado (puede ser null).
+     */
+    private void log(String accion, Pedido pedido) {
+        String msg = String.format("%1$tF %1$tT.%1$tL [%2$s] %3$s %4$s",
+                new Date(),
+                Thread.currentThread().getName(),
+                accion,
+                (pedido != null ? pedido : ""));
+        System.out.println(msg);
     }
 
  

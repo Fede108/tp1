@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Modelo de sistema de almacenamiento concurrente mediante casilleros.
@@ -13,10 +15,12 @@ public class SistemaAlmacenamiento {
     private Integer cantPedidos;
     private Integer totalPedidos;
 
-    private static final int N_CASILLEROS = 8;
+    private static final int N_CASILLEROS = 12;
 
     // Objeto lock dedicado para las secciones críticas
-    private final Object lockCasillero = new Object();
+   // private final Object lockCasillero = new Object();
+    private ReentrantLock lockCasillero = new ReentrantLock(true);
+    private final Condition casilleroLibre = lockCasillero.newCondition();
   
 
     /**
@@ -39,20 +43,22 @@ public class SistemaAlmacenamiento {
      * @return Pedido asociado al casillero ocupado.
      */
     public Pedido ocuparCasillero() {
-        synchronized (lockCasillero) {
+        lockCasillero.lock();
+        try {
             int nroCasillero;
             Casillero casillero;
 
             while (casillerosVisitados.size() == N_CASILLEROS) {
                 log("CASILLEROS_LLENOS", null);
                 try {
-                    lockCasillero.wait();
+                    casilleroLibre.await();    
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     e.printStackTrace();
                 }
             }
 
+            int casillerosFueraServicios = 0;
             while (true) {
                 nroCasillero = new Random().nextInt(N_CASILLEROS);
                 casillero = matriz.get(nroCasillero);
@@ -61,12 +67,28 @@ public class SistemaAlmacenamiento {
                     casillero.ocupar();
                     break;
                 }
+              
+                if (casillero.estaFueraServicio()) {
+                    casillerosFueraServicios++;
+                }
+                if (casillerosFueraServicios == N_CASILLEROS) {
+                    log("CASILLEROS OUT OF SERVICE", null);
+                }
             }
 
             Pedido pedido = new Pedido(nroCasillero, ++cantPedidos);
             log("CASILLERO_OCUPADO ", pedido);
             return pedido;
+        } catch (Exception e) {
+            // TODO: handle exception
+            return null;
+        } finally {
+            lockCasillero.unlock();
         }
+    }
+
+    public void getlockCasillero(){
+        lockCasillero.lock();
     }
 
     /**
@@ -75,11 +97,15 @@ public class SistemaAlmacenamiento {
      * @param pedido Pedido asociado al casillero a desocupar.
      */
     public void desocuparCasillero(Pedido pedido) {
-        synchronized (lockCasillero) {
+        try {
             matriz.get(pedido.getCasillero()).desocupar();
             casillerosVisitados.remove(pedido.getCasillero());
-            lockCasillero.notify();
+            casilleroLibre.signalAll(); 
             log("CASILLERO_LIBERADO", pedido);
+        } catch (Exception e) {
+            // TODO: handle exception
+        } finally{
+            lockCasillero.unlock();
         }
     }
 
@@ -88,10 +114,15 @@ public class SistemaAlmacenamiento {
      * @param pedido Pedido asociado al casillero fallido.
      */
     public void setCasilleroFueraServicio(Pedido pedido) {
-        synchronized (lockCasillero) {
-            matriz.get(pedido.getCasillero()).setFueraServicio();
-            log("PEDIDO_FALLIDO   ", pedido);
-        }
+            try {
+                matriz.get(pedido.getCasillero()).setFueraServicio();
+                log("PEDIDO_FALLIDO   ", pedido);
+                casillerosVisitados.remove(pedido.getCasillero());    
+            } catch (Exception e) {
+                // TODO: handle exception
+            } finally{
+                lockCasillero.unlock();
+            }
     }
 
     /**

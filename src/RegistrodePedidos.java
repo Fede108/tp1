@@ -3,6 +3,8 @@
  * Utiliza sincronización con objetos independientes para proteger el acceso concurrente a cada lista.
  */
 import java.util.ArrayList;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class RegistrodePedidos {
     private ArrayList<Pedido> listaPreparacion;
@@ -10,10 +12,22 @@ public class RegistrodePedidos {
     private ArrayList<Pedido> listaEntregados;
     private ArrayList<Pedido> listaFallidos;
 
-    private final Object lockPreparacion = new Object();
-    private final Object lockTransito    = new Object();
-    private final Object lockEntregados  = new Object();
-    private final Object lockFallidos    = new Object(); 
+  //  private final Object lockPreparacion = new Object();
+  //  private final Object lockTransito    = new Object();
+  //  private final Object lockEntregados  = new Object();
+  //  private final Object lockFallidos    = new Object(); 
+
+    private ReentrantLock lockPrep = new ReentrantLock(true);
+    private final Condition listaLibre = lockPrep.newCondition();
+
+    private final ReentrantLock lockTrans   = new ReentrantLock(true);
+    private final Condition  condTrans     = lockTrans.newCondition();
+
+    private final ReentrantLock lockEntreg  = new ReentrantLock(true);
+    private final Condition  condEntreg    = lockEntreg.newCondition();
+
+    private final ReentrantLock lockFall    = new ReentrantLock(true);
+    private final Condition  condFall      = lockFall.newCondition();
 
     /**
      * Constructor que inicializa las listas y los objetos de sincronización.
@@ -25,14 +39,20 @@ public class RegistrodePedidos {
         listaFallidos    = new ArrayList<>();
     }
 
+    public void getLockListaPreparacion(){
+        lockPrep.lock();
+    }
+
     /**
      * Agrega un pedido a la lista de preparación.
      * @param pedido el pedido que será agregado.
      */
     public void addListaPreparacion(Pedido pedido) {
-        synchronized(lockPreparacion) {
+        try{
             listaPreparacion.add(pedido);
-            lockPreparacion.notify();
+            listaLibre.signalAll();
+        }finally{
+            lockPrep.unlock();
         }
     }
 
@@ -42,15 +62,18 @@ public class RegistrodePedidos {
      * @return el pedido listo para ser despachado.
      */
     public Pedido getListaPreparacion() {
-        synchronized(lockPreparacion) {
+        lockPrep.lock();
+        try{
             while (listaPreparacion.isEmpty()) {
                 try {
-                    lockPreparacion.wait();
+                    listaLibre.await();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-            return listaPreparacion.removeLast();        
+            return listaPreparacion.removeLast();   
+        }finally{
+            lockPrep.unlock();
         }
     }
 
@@ -59,10 +82,13 @@ public class RegistrodePedidos {
      * @param pedido el pedido que ha sido despachado.
      */
     public void addListaTransito(Pedido pedido) {
-        synchronized(lockTransito) {
+        lockTrans.lock();
+        try {
             listaTransito.add(pedido);
-            lockTransito.notifyAll();
-        }   
+            condTrans.signalAll();
+        } finally {
+            lockTrans.unlock();
+        }
     }
 
      /**
@@ -71,16 +97,15 @@ public class RegistrodePedidos {
      * @return el pedido listo para ser entregado.
      */
     public Pedido getListaTransito() {
-        synchronized(lockTransito) {
+        lockTrans.lock();
+        try {
             while (listaTransito.isEmpty()) {
-                try {
-                    lockTransito.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                condTrans.awaitUninterruptibly();
             }
-                return listaTransito.removeLast();        
-        }   
+            return listaTransito.remove(listaTransito.size() - 1);
+        } finally {
+            lockTrans.unlock();
+        }
     }
     
 
@@ -89,19 +114,42 @@ public class RegistrodePedidos {
      * @param pedido el pedido que ha sido entregado.
      */
     public void addListaEntregados(Pedido pedido) {
-        synchronized(lockEntregados){            
-        listaEntregados.add(pedido);
-        }   
+        lockEntreg.lock();
+        try {
+            listaEntregados.add(pedido);
+            condEntreg.signalAll();
+        } finally {
+            lockEntreg.unlock();
+        }
+    }
+
+    /**
+     * Agrega un pedido a la lista de fallidos.
+     */
+    public Pedido getListaEntregados() {
+        lockEntreg.lock();
+        try {
+            while (listaEntregados.isEmpty()) {
+                condEntreg.awaitUninterruptibly();
+            }
+            return listaEntregados.remove(listaEntregados.size() - 1);
+        } finally {
+            lockEntreg.unlock();
+        }
     }
 
      /**
      * Agrega un pedido a la lista de fallados.
      * @param pedido el pedido que ha fallado.
      */
-    public void addListaFallado(Pedido pedido) {
-        synchronized(lockFallidos) {
+    public void addListaFallidos(Pedido pedido) {
+        lockFall.lock();
+        try {
             listaFallidos.add(pedido);
-        }   
+            condFall.signalAll();
+        } finally {
+            lockFall.unlock();
+        }
     }
 
     /**
