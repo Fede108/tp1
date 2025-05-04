@@ -1,18 +1,18 @@
-[006 ms]  Pedidos despachados: 0
-[174 ms]  Pedidos despachados: 0
-[185 ms]  Pedidos despachados: 0
-[196 ms]  Pedidos despachados: 0
-[206 ms]  Pedidos despachados: 0
-[218 ms]  Pedidos despachados: 0
-[229 ms]  Pedidos despachados: 0
-[239 ms]  Pedidos despachados: 0
-[249 ms]  Pedidos despachados: 0
-[260 ms]  Pedidos despachados: 0
-[270 ms]  Pedidos despachados: 0
-[281 ms]  Pedidos despachados: 0
-[291 ms]  Pedidos despachados: 0
-[302 ms]  Pedidos despachados: 0
-[312 ms]  Pedidos despachados: 0
-[322 ms]  Pedidos despachados: 0
-[333 ms]  Pedidos despachados: 0
-[333 ms]  Casilleros fallidos: 1
+[022 ms] Preparación: 0 | Tránsito: 0 | Entregados: 0 | Fallidos: 0
+[1295 ms] Preparación: 1 | Tránsito: 2 | Entregados: 0 | Fallidos: 0
+[2296 ms] Preparación: 2 | Tránsito: 1 | Entregados: 2 | Fallidos: 1
+[3298 ms] Preparación: 3 | Tránsito: 1 | Entregados: 4 | Fallidos: 1
+[4299 ms] Preparación: 4 | Tránsito: 1 | Entregados: 6 | Fallidos: 1
+[5299 ms] Preparación: 4 | Tránsito: 0 | Entregados: 7 | Fallidos: 1
+[6300 ms] Preparación: 5 | Tránsito: 1 | Entregados: 8 | Fallidos: 1
+[7301 ms] Preparación: 6 | Tránsito: 0 | Entregados: 10 | Fallidos: 2
+[8302 ms] Preparación: 6 | Tránsito: 0 | Entregados: 11 | Fallidos: 3
+[9303 ms] Preparación: 6 | Tránsito: 0 | Entregados: 11 | Fallidos: 3
+[10304 ms] Preparación: 4 | Tránsito: 0 | Entregados: 13 | Fallidos: 3
+[11305 ms] Preparación: 2 | Tránsito: 0 | Entregados: 14 | Fallidos: 4
+[12306 ms] Preparación: 0 | Tránsito: 0 | Entregados: 16 | Fallidos: 4
+[13307 ms] Preparación: 0 | Tránsito: 0 | Entregados: 16 | Fallidos: 4
+[14308 ms] Preparación: 0 | Tránsito: 0 | Entregados: 16 | Fallidos: 4
+[15309 ms] Preparación: 0 | Tránsito: 0 | Entregados: 16 | Fallidos: 4
+
+[15309 ms]  Casilleros fallidos: 2 |  Casilleros funcionales 10

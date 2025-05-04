@@ -27,7 +27,6 @@ public class RegistrodePedidos {
     private final Condition  condEntreg    = lockEntreg.newCondition();
 
     private final ReentrantLock lockFall    = new ReentrantLock(true);
-    private final Condition  condFall      = lockFall.newCondition();
 
     /**
      * Constructor que inicializa las listas y los objetos de sincronización.
@@ -146,7 +145,6 @@ public class RegistrodePedidos {
         lockFall.lock();
         try {
             listaFallidos.add(pedido);
-            condFall.signalAll();
         } finally {
             lockFall.unlock();
         }
@@ -167,5 +165,29 @@ public class RegistrodePedidos {
      */
     public int sizeListaTransito() {
         return listaTransito.size();
+    }
+
+    /**
+     * Retorna el tamaño de la lista de pedidos en preparación.
+     * @return cantidad de pedidos en preparación.
+     */
+    public int sizeListaPreparacion() {
+        return listaPreparacion.size();
+    }
+
+    /**
+     * Retorna el tamaño de la lista de pedidos fallidos.
+     * @return cantidad de pedidos fallidos.
+     */
+    public int sizeListaFallidos() {
+        return listaFallidos.size();
+    }
+
+    /**
+     * Retorna el tamaño de la lista de pedidos entregados.
+     * @return cantidad de pedidos entregados.
+     */
+    public int sizeListaEntregados() {
+        return listaEntregados.size();
     }
 }

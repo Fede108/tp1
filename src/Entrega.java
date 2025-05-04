@@ -2,7 +2,6 @@ import java.util.Date;
 import java.util.Random;
 
 public class Entrega implements Runnable {
-    private SistemaAlmacenamiento sistema;
     private RegistrodePedidos Registropedidos;
 
 
@@ -11,8 +10,7 @@ public class Entrega implements Runnable {
      * @param sistema instancia del sistema de almacenamiento.
      * @param pedidos referencia al registro compartido de pedidos.
      */
-    public Entrega(SistemaAlmacenamiento sistema, RegistrodePedidos pedidos) {
-        this.sistema = sistema;
+    public Entrega( RegistrodePedidos pedidos) {
         this.Registropedidos = pedidos;
     }
 
@@ -28,8 +26,6 @@ public class Entrega implements Runnable {
         Random rnd = new Random();
 
         if (rnd.nextInt(100) < 5) { // 10% de fallas
-            sistema.getlockCasillero();
-            sistema.setCasilleroFueraServicio(pedido);
             pedido.setFallido();
             Registropedidos.addListaFallidos(pedido);
             log("PEDIDO_FALLIDO", pedido);
@@ -63,6 +59,12 @@ public class Entrega implements Runnable {
     @Override
     public void run() {
         while (true){
+            try {
+                Thread.sleep(1300);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             if ( ! entregaPedido()) {
                 break;
             }

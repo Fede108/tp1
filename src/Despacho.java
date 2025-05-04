@@ -60,6 +60,12 @@ public class Despacho implements Runnable {
     public void run() {
         while (siguientePedido() < sistema.getTotalPedidos()) {
             despacharPedido();
+            try {
+                Thread.sleep(1300);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
         Pedido pedidoPoison = new Pedido(null, -1);

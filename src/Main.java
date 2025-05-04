@@ -26,7 +26,7 @@ public class Main {
       RegistrodePedidos registrodePedidos = new RegistrodePedidos();
       Preparacion preparacion = new Preparacion(sistemaAlmacenamiento, registrodePedidos);
       Despacho despacho = new Despacho(sistemaAlmacenamiento, registrodePedidos);
-      Entrega entrega = new Entrega(sistemaAlmacenamiento, registrodePedidos);
+      Entrega entrega = new Entrega(registrodePedidos);
 
       Thread[] hilos = {
           new Thread(preparacion),
@@ -61,7 +61,7 @@ public class Main {
 
           Registro(startTime, sistemaAlmacenamiento, registrodePedidos, writer, false);
           try {
-              Thread.sleep(10);
+              Thread.sleep(1000);
           } catch (InterruptedException e) {
               e.printStackTrace();
           }
@@ -87,7 +87,12 @@ public class Main {
       String prefix = String.format("[%03d ms] ", programTime);
 
       try {
-          String linea = prefix + " Pedidos despachados: " + registro.sizeListaTransito();
+        String linea = prefix +
+        "Preparación: " + registro.sizeListaPreparacion() + " | " +
+        "Tránsito: " + registro.sizeListaTransito() + " | " +
+        "Entregados: " + registro.sizeListaEntregados() + " | " +
+        "Fallidos: " + registro.sizeListaFallidos();
+    
           writer.write(linea);
           writer.newLine();
           writer.flush();
@@ -97,7 +102,9 @@ public class Main {
 
       if (lineaFinal) {
           try {
-              String linea = prefix + " Casilleros fallidos: " + sistema.getCasillerosFallidos();
+              writer.newLine();
+              String linea = prefix + " Casilleros fallidos: " + sistema.getCasillerosFallidos() + " | " +
+              " Casilleros funcionales " + sistema.getCasillerosFuncionales() ;
               writer.write(linea);
               writer.newLine();
               writer.flush();

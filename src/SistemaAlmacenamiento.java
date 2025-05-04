@@ -117,6 +117,7 @@ public class SistemaAlmacenamiento {
             try {
                 matriz.get(pedido.getCasillero()).setFueraServicio();
                 log("PEDIDO_FALLIDO   ", pedido);
+                System.err.println(pedido.getCasillero());
                 casillerosVisitados.remove(pedido.getCasillero());    
             } catch (Exception e) {
                 // TODO: handle exception
