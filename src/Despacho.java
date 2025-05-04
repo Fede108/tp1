@@ -27,9 +27,10 @@ public class Despacho implements Runnable {
         Pedido pedido = Registropedidos.getListaPreparacion();
         Random rnd = new Random();
 
-        if (rnd.nextInt(100) < 15) { // 15% de fallas
+        if (rnd.nextInt(100) < 5) { // 15% de fallas
             sistema.setCasilleroFueraServicio(pedido);
             pedido.setFallido();
+            Registropedidos.addListaFallado(pedido);
         } else {
             sistema.desocuparCasillero(pedido);
             Registropedidos.addListaTransito(pedido);
@@ -43,9 +44,13 @@ public class Despacho implements Runnable {
     public synchronized int siguientePedido() {
         if (pedidosCompletados < sistema.getTotalPedidos()) {
             return pedidosCompletados++;
-        } else {
+        } else {     
             return pedidosCompletados;
         }
+    }
+
+    public synchronized int pedidoActual(){
+        return pedidosCompletados;
     }
 
     /**
@@ -56,6 +61,15 @@ public class Despacho implements Runnable {
         while (siguientePedido() < sistema.getTotalPedidos()) {
             despacharPedido();
         }
+        Pedido pedidoPoison = new Pedido(null, pedidosCompletados);
+        pedidoPoison.setPoisonPill();
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        Registropedidos.addListaTransito(pedidoPoison);
     }
 
     /**

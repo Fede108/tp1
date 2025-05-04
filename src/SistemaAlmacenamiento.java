@@ -12,95 +12,108 @@ public class SistemaAlmacenamiento {
     private HashMap<Integer, Casillero> casillerosVisitados;
     private Integer cantPedidos;
     private Integer totalPedidos;
+    private boolean pedidosCompletados = false;
 
-    private static final int N_CASILLEROS = 50; 
+    private static final int N_CASILLEROS = 8;
+
+    // Objeto lock dedicado para las secciones críticas
+    private final Object lockCasillero = new Object();
+  
 
     /**
      * Constructor del sistema.
      * @param totalPedidos cantidad total de pedidos a gestionar en el sistema.
      */
-    SistemaAlmacenamiento(Integer totalPedidos)
-    {
+    SistemaAlmacenamiento(Integer totalPedidos) {
         matriz = new ArrayList<>(N_CASILLEROS);
         for (int i = 0; i < N_CASILLEROS; i++) {
             matriz.add(new Casillero());
         }
         cantPedidos = 0;
-        this.totalPedidos   = totalPedidos;
+        this.totalPedidos = totalPedidos;
         casillerosVisitados = new HashMap<>();
     }
 
     /**
-     * Método sincronizado para ocupar un casillero vacío y funcional.
+     * Método para ocupar un casillero vacío y funcional.
      * Espera si todos los casilleros están llenos.
      * @return Pedido asociado al casillero ocupado.
      */
-    public synchronized Pedido ocuparCasillero() 
-    {
-        int nroCasillero;
-        Casillero casillero;
+    public Pedido ocuparCasillero() {
+        synchronized (lockCasillero) {
+            int nroCasillero;
+            Casillero casillero;
 
-        while (casillerosVisitados.size() == N_CASILLEROS) 
-        {
-            log("CASILLEROS_LLENOS", null);
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            while (casillerosVisitados.size() == N_CASILLEROS) {
+                log("CASILLEROS_LLENOS", null);
+                try {
+                    lockCasillero.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    e.printStackTrace();
+                }
             }
-        }
 
-        while (true) {
-            nroCasillero = new Random().nextInt(N_CASILLEROS);
-            casillero    = matriz.get(nroCasillero);
-            if (!casillerosVisitados.containsKey(nroCasillero) && casillero.estaVacio()) {
-                casillerosVisitados.put(nroCasillero, casillero);
-                casillero.ocupar();
-                break;
+            while (true) {
+                nroCasillero = new Random().nextInt(N_CASILLEROS);
+                casillero = matriz.get(nroCasillero);
+                if (!casillerosVisitados.containsKey(nroCasillero) && casillero.estaVacio()) {
+                    casillerosVisitados.put(nroCasillero, casillero);
+                    casillero.ocupar();
+                    break;
+                }
             }
-        }
 
-        Pedido pedido = new Pedido(nroCasillero, ++cantPedidos);
-        log("OCUPAR_CASILLERO  ", pedido);
-        return pedido;
+            Pedido pedido = new Pedido(nroCasillero, ++cantPedidos);
+            log("CASILLERO_OCUPADO ", pedido);
+            if (cantPedidos == totalPedidos) { pedidosCompletados = true;}
+            return pedido;
+        }
     }
 
     /**
-     * Método sincronizado para desocupar un casillero previamente ocupado.
+     * Método para desocupar un casillero previamente ocupado.
      * Notifica a hilos en espera de casilleros disponibles.
      * @param pedido Pedido asociado al casillero a desocupar.
      */
-    public synchronized void desocuparCasillero(Pedido pedido){
-        matriz.get(pedido.getCasillero()).desocupar();
-        casillerosVisitados.remove(pedido.getCasillero());
-        notify();
-        log("CASILLERO_LIBERADO", pedido);
+    public void desocuparCasillero(Pedido pedido) {
+        synchronized (lockCasillero) {
+            matriz.get(pedido.getCasillero()).desocupar();
+            casillerosVisitados.remove(pedido.getCasillero());
+            lockCasillero.notify();
+            log("CASILLERO_LIBERADO", pedido);
+        }
     }
 
     /**
      * Marca un casillero como fuera de servicio.
      * @param pedido Pedido asociado al casillero fallido.
      */
-    public synchronized void setCasilleroFueraServicio(Pedido pedido)
-    {
-         matriz.get(pedido.getCasillero()).setFueraServicio();
-         log("PEDIDO_FALLIDO", pedido);
+    public void setCasilleroFueraServicio(Pedido pedido) {
+        synchronized (lockCasillero) {
+            matriz.get(pedido.getCasillero()).setFueraServicio();
+            log("PEDIDO_FALLIDO   ", pedido);
+        }
     }
 
     /**
      * @return Total de pedidos que se deben procesar.
      */
-    public Integer getTotalPedidos(){
+    public Integer getTotalPedidos() {
         return totalPedidos;
+    }
+
+    public boolean pedidosCompletados(){
+        return pedidosCompletados;
     }
 
     /**
      * @return Cantidad de casilleros marcados como fuera de servicio.
      */
-    public Integer getCasillerosFallidos(){
-        Integer fallidos = 0;
+    public Integer getCasillerosFallidos() {
+        int fallidos = 0;
         for (int i = 0; i < N_CASILLEROS; i++) {
-            if(matriz.get(i).estaFueraServicio()){
+            if (matriz.get(i).estaFueraServicio()) {
                 fallidos++;
             }
         }
@@ -110,10 +123,10 @@ public class SistemaAlmacenamiento {
     /**
      * @return Cantidad de casilleros funcionales.
      */
-    public Integer getCasillerosFuncionales(){
-        Integer funcionando = 0;
+    public Integer getCasillerosFuncionales() {
+        int funcionando = 0;
         for (int i = 0; i < N_CASILLEROS; i++) {
-            if(!matriz.get(i).estaFueraServicio()){
+            if (!matriz.get(i).estaFueraServicio()) {
                 funcionando++;
             }
         }
@@ -127,10 +140,10 @@ public class SistemaAlmacenamiento {
      */
     private void log(String accion, Pedido pedido) {
         String msg = String.format("%1$tF %1$tT.%1$tL [%2$s] %3$s %4$s",
-            new Date(),
-            Thread.currentThread().getName(),
-            accion,
-            (pedido != null ? pedido : ""));
+                new Date(),
+                Thread.currentThread().getName(),
+                accion,
+                (pedido != null ? pedido : ""));
         System.out.println(msg);
     }
 }

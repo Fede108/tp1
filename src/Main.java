@@ -22,16 +22,19 @@ public class Main {
   public static void main(String[] args) {
       long startTime = System.currentTimeMillis();
 
-      SistemaAlmacenamiento sistemaAlmacenamiento = new SistemaAlmacenamiento(200);
+      SistemaAlmacenamiento sistemaAlmacenamiento = new SistemaAlmacenamiento(20);
       RegistrodePedidos registrodePedidos = new RegistrodePedidos();
       Preparacion preparacion = new Preparacion(sistemaAlmacenamiento, registrodePedidos);
       Despacho despacho = new Despacho(sistemaAlmacenamiento, registrodePedidos);
+      Entrega entrega = new Entrega(sistemaAlmacenamiento, registrodePedidos);
 
       Thread[] hilos = {
           new Thread(preparacion),
           new Thread(despacho),
           new Thread(preparacion),
           new Thread(despacho),
+          new Thread(entrega),
+          new Thread(entrega),
           new Thread(preparacion),
       };
 

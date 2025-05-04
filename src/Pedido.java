@@ -19,4 +19,13 @@ public class Pedido {
     public String toString() {
         return "Pedido #" + id;
     }
+
+    public void setPoisonPill(){
+        Estado = 2;
+    }
+
+    public boolean pedidoPoison(){
+        return Estado == 2;
+    }
+
 }

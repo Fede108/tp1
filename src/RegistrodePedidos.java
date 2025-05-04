@@ -7,16 +7,22 @@ import java.util.ArrayList;
 public class RegistrodePedidos {
     private ArrayList<Pedido> listaPreparacion;
     private ArrayList<Pedido> listaTransito;
+    private ArrayList<Pedido> listaEntrega;
+    private ArrayList<Pedido> listaFallados;
 
     private final Object lockPreparacion = new Object();
-    private final Object lockTransito = new Object();
+    private final Object lockTransito    = new Object();
+    private final Object lockEntrega     = new Object();
+    private final Object lockFalla       = new Object(); 
 
     /**
      * Constructor que inicializa las listas y los objetos de sincronización.
      */
-    public RegistrodePedidos() {
+    public RegistrodePedidos( ) {
         listaPreparacion = new ArrayList<>();
-        listaTransito = new ArrayList<>();
+        listaTransito    = new ArrayList<>();
+        listaEntrega     = new ArrayList<>();
+        listaFallados    = new ArrayList<>();
     }
 
     /**
@@ -26,7 +32,7 @@ public class RegistrodePedidos {
     public void addListaPreparacion(Pedido pedido) {
         synchronized(lockPreparacion) {
             listaPreparacion.add(pedido);
-            lockPreparacion.notifyAll();
+            lockPreparacion.notify();
         }
     }
 
@@ -55,6 +61,46 @@ public class RegistrodePedidos {
     public void addListaTransito(Pedido pedido) {
         synchronized(lockTransito) {
             listaTransito.add(pedido);
+            lockTransito.notifyAll();
+        }   
+    }
+
+     /**
+     * Obtiene y remueve el último pedido de la lista de Transito.
+     * Espera si la lista está vacía.
+     * @return el pedido listo para ser entregado.
+     */
+    public Pedido getListaTransito() {
+        synchronized(lockTransito) {
+            while (listaTransito.isEmpty()) {
+                try {
+                    lockTransito.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+                return listaTransito.removeLast();        
+        }   
+    }
+    
+
+     /**
+     * Agrega un pedido a la lista de entrega.
+     * @param pedido el pedido que ha sido entregado.
+     */
+    public void addListaEntregado(Pedido pedido) {
+        synchronized(lockEntrega) {
+            listaEntrega.add(pedido);
+        }   
+    }
+
+     /**
+     * Agrega un pedido a la lista de fallados.
+     * @param pedido el pedido que ha fallado.
+     */
+    public void addListaFallado(Pedido pedido) {
+        synchronized(lockFalla) {
+            listaFallados.add(pedido);
         }   
     }
 
@@ -63,6 +109,8 @@ public class RegistrodePedidos {
      */
     public void print() {
         System.out.println(listaTransito.size());
+        System.out.println(listaFallados.size());
+        System.out.println(listaEntrega.size());
     }
 
     /**
