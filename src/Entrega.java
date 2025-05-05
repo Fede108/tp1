@@ -22,6 +22,7 @@ public class Entrega implements Runnable {
         if (pedido.pedidoPoison()) {
             Registropedidos.addListaTransito(pedido);
             finalizacion = true;
+            return;
         }
 
         Random rnd = new Random();
@@ -63,12 +64,20 @@ public class Entrega implements Runnable {
             try {
                 Thread.sleep(0);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
 
-        log("finalizacion", null);
+        Pedido pedidoPoison = new Pedido(null, -1);
+        pedidoPoison.setPoisonPill();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        Registropedidos.addListaEntregados(pedidoPoison);
+        log("ENTREGA_FINALIZACION", null);
     }
 
 }

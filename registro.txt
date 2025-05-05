@@ -1,5 +1,6 @@
-[027 ms] Preparación: 0 | Tránsito: 0 | Entregados: 0 | Fallidos: 0
-[1251 ms] Preparación: 0 | Tránsito: 2 | Entregados: 17 | Fallidos: 6
-[2252 ms] Preparación: 0 | Tránsito: 2 | Entregados: 17 | Fallidos: 6
+[021 ms] Preparación: 0 | Tránsito: 0 | Entregados: 0 | Fallidos: 0
+[1219 ms] Preparación: 0 | Tránsito: 2 | Entregados: 0 | Fallidos: 8
+[2220 ms] Preparación: 0 | Tránsito: 2 | Entregados: 3 | Fallidos: 8
+[3221 ms] Preparación: 0 | Tránsito: 2 | Entregados: 3 | Fallidos: 8
 
-[2252 ms]  Casilleros fallidos: 4 |  Casilleros funcionales 1
+[3221 ms]  Casilleros fallidos: 4 |  Casilleros funcionales 1

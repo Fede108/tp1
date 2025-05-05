@@ -27,14 +27,17 @@ public class Main {
       Preparacion preparacion = new Preparacion(sistemaAlmacenamiento, registrodePedidos);
       Despacho despacho = new Despacho(sistemaAlmacenamiento, registrodePedidos);
       Entrega entrega = new Entrega(registrodePedidos);
+      VerificacionFinal verificacion = new VerificacionFinal(registrodePedidos);
 
       Thread[] hilos = {
           new Thread(preparacion),
           new Thread(despacho),
+         new Thread(verificacion),
           new Thread(preparacion),
           new Thread(despacho),
           new Thread(entrega),
           new Thread(entrega),
+          new Thread(verificacion),
           new Thread(preparacion),
           new Thread(entrega),
       };

@@ -53,6 +53,14 @@ public class Despacho implements Runnable {
         }
     }
 
+     /**
+     * Imprime estadísticas y registros de pedidos.
+     */
+    public void print() {
+        System.out.printf("\nCantidad pedidos preparados  %d\n", pedidosCompletados.get());
+        Registropedidos.print();
+    }
+
     /**
      * Ejecuta el hilo de despacho hasta completar la cantidad total de pedidos.
      */
@@ -79,11 +87,5 @@ public class Despacho implements Runnable {
         Registropedidos.addListaTransito(pedidoPoison);
     }
 
-    /**
-     * Imprime estadísticas y registros de pedidos.
-     */
-    public void print() {
-        System.out.printf("\nCantidad pedidos preparados  %d\n", pedidosCompletados.get());
-        Registropedidos.print();
-    }
+   
 }

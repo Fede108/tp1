@@ -11,6 +11,7 @@ public class RegistrodePedidos {
     private ArrayList<Pedido> listaTransito;
     private ArrayList<Pedido> listaEntregados;
     private ArrayList<Pedido> listaFallidos;
+    private ArrayList<Pedido> listaVerificados;
 
   //  private final Object lockPreparacion = new Object();
   //  private final Object lockTransito    = new Object();
@@ -21,12 +22,13 @@ public class RegistrodePedidos {
     private final Condition listaLibre = lockPrep.newCondition();
 
     private final ReentrantLock lockTrans   = new ReentrantLock(true);
-    private final Condition  condTrans     = lockTrans.newCondition();
+    private final Condition  condTrans = lockTrans.newCondition();
 
     private final ReentrantLock lockEntreg  = new ReentrantLock(true);
-    private final Condition  condEntreg    = lockEntreg.newCondition();
+    private final Condition  condEntreg = lockEntreg.newCondition();
 
-    private final ReentrantLock lockFall    = new ReentrantLock(true);
+    private final ReentrantLock lockFall = new ReentrantLock(true);
+    private final ReentrantLock lockVerif = new ReentrantLock(true); 
 
     /**
      * Constructor que inicializa las listas y los objetos de sincronización.
@@ -36,6 +38,7 @@ public class RegistrodePedidos {
         listaTransito    = new ArrayList<>();
         listaEntregados  = new ArrayList<>();
         listaFallidos    = new ArrayList<>();
+        listaVerificados = new ArrayList<>();
     }
 
     public void getLockListaPreparacion(){
@@ -156,6 +159,20 @@ public class RegistrodePedidos {
         }
     }
 
+    /*
+     * Agrega un pedido a la lista de entregados
+     * @param pedido el pedido que ha sido entregado.
+     */
+
+     public void addListaVerificados(Pedido pedido) {
+        lockVerif.lock();
+        try {
+            listaVerificados.add(pedido);
+        } finally {
+            lockVerif.unlock();
+        }   
+    }
+
     /**
      * Imprime la cantidad de pedidos en tránsito.
      */
@@ -163,6 +180,7 @@ public class RegistrodePedidos {
         System.out.printf("\nCantidad pedidos en transito  %d\n ",listaTransito.size());
         System.out.printf("\nCantidad pedidos fallidos  %d\n ",listaFallidos.size());
         System.out.printf("\nCantidad pedidos entregados  %d\n ",listaEntregados.size());
+        System.out.printf("\nCantidad pedidos verificados  %d\n ",listaVerificados.size());
     }
 
     /**
