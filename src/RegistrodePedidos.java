@@ -1,11 +1,9 @@
+import java.util.ArrayList;
+
 /**
  * Clase RegistrodePedidos que gestiona listas compartidas de pedidos en preparación y en tránsito.
  * Utiliza sincronización con objetos independientes para proteger el acceso concurrente a cada lista.
  */
-import java.util.ArrayList;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-
 public class RegistrodePedidos {
     private ArrayList<Pedido> listaPreparacion;
     private ArrayList<Pedido> listaTransito;
@@ -13,27 +11,16 @@ public class RegistrodePedidos {
     private ArrayList<Pedido> listaFallidos;
     private ArrayList<Pedido> listaVerificados;
 
-  //  private final Object lockPreparacion = new Object();
-  //  private final Object lockTransito    = new Object();
-  //  private final Object lockEntregados  = new Object();
-  //  private final Object lockFallidos    = new Object(); 
-
-    private ReentrantLock lockPrep = new ReentrantLock(true);
-    private final Condition listaLibre = lockPrep.newCondition();
-
-    private final ReentrantLock lockTrans   = new ReentrantLock(true);
-    private final Condition  condTrans = lockTrans.newCondition();
-
-    private final ReentrantLock lockEntreg  = new ReentrantLock(true);
-    private final Condition  condEntreg = lockEntreg.newCondition();
-
-    private final ReentrantLock lockFall = new ReentrantLock(true);
-    private final ReentrantLock lockVerif = new ReentrantLock(true); 
+    private final Object lockPreparacion = new Object();
+    private final Object lockTransito    = new Object();
+    private final Object lockEntregados  = new Object();
+    private final Object lockFallidos    = new Object();
+    private final Object lockVerificados = new Object();
 
     /**
      * Constructor que inicializa las listas y los objetos de sincronización.
      */
-    public RegistrodePedidos( ) {
+    public RegistrodePedidos() {
         listaPreparacion = new ArrayList<>();
         listaTransito    = new ArrayList<>();
         listaEntregados  = new ArrayList<>();
@@ -41,21 +28,14 @@ public class RegistrodePedidos {
         listaVerificados = new ArrayList<>();
     }
 
-    public void getLockListaPreparacion(){
-        lockPrep.lock();
-    }
-
     /**
      * Agrega un pedido a la lista de preparación.
      * @param pedido el pedido que será agregado.
      */
     public void addListaPreparacion(Pedido pedido) {
-        try{
+        synchronized (lockPreparacion) {
             listaPreparacion.add(pedido);
-            listaLibre.signalAll();
-    //        System.out.printf("\n PEDIDO_AGREGADO \n ");
-        }finally{
-            lockPrep.unlock();
+            lockPreparacion.notifyAll();
         }
     }
 
@@ -65,18 +45,16 @@ public class RegistrodePedidos {
      * @return el pedido listo para ser despachado.
      */
     public Pedido getListaPreparacion() {
-        lockPrep.lock();
-        try{
+        synchronized (lockPreparacion) {
             while (listaPreparacion.isEmpty()) {
                 try {
-                    listaLibre.await();
+                    lockPreparacion.wait();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted while waiting for pedidos en preparación", e);
                 }
             }
-            return listaPreparacion.removeLast();   
-        }finally{
-            lockPrep.unlock();
+            return listaPreparacion.remove(listaPreparacion.size() - 1);
         }
     }
 
@@ -85,110 +63,114 @@ public class RegistrodePedidos {
      * @param pedido el pedido que ha sido despachado.
      */
     public void addListaTransito(Pedido pedido) {
-        lockTrans.lock();
-        try {
+        synchronized (lockTransito) {
             listaTransito.add(pedido);
-            condTrans.signalAll();
-        } finally {
-            lockTrans.unlock();
+            lockTransito.notifyAll();
         }
     }
 
-     /**
-     * Obtiene y remueve el último pedido de la lista de Transito.
+    /**
+     * Obtiene y remueve el último pedido de la lista de tránsito.
      * Espera si la lista está vacía.
      * @return el pedido listo para ser entregado.
      */
     public Pedido getListaTransito() {
-        lockTrans.lock();
-        try {
+        synchronized (lockTransito) {
             while (listaTransito.isEmpty()) {
-                condTrans.awaitUninterruptibly();
+                try {
+                    lockTransito.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted while waiting for pedidos en tránsito", e);
+                }
             }
             return listaTransito.remove(listaTransito.size() - 1);
-        } finally {
-            lockTrans.unlock();
         }
     }
-    
 
-     /**
-     * Agrega un pedido a la lista de entrega.
+    /**
+     * Agrega un pedido a la lista de entregados.
      * @param pedido el pedido que ha sido entregado.
      */
     public void addListaEntregados(Pedido pedido) {
-        lockEntreg.lock();
-        try {
+        synchronized (lockEntregados) {
             listaEntregados.add(pedido);
-            condEntreg.signalAll();
-        } finally {
-            lockEntreg.unlock();
+            lockEntregados.notifyAll();
+        }
+    }
+
+    /**
+     * Obtiene y remueve el último pedido de la lista de entregados.
+     * Espera si la lista está vacía.
+     * @return el pedido entregado más reciente.
+     */
+    public Pedido getListaEntregados() {
+        synchronized (lockEntregados) {
+            while (listaEntregados.isEmpty()) {
+                try {
+                    lockEntregados.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted while waiting for pedidos entregados", e);
+                }
+            }
+            return listaEntregados.remove(listaEntregados.size() - 1);
         }
     }
 
     /**
      * Agrega un pedido a la lista de fallidos.
-     */
-    public Pedido getListaEntregados() {
-        lockEntreg.lock();
-        try {
-            while (listaEntregados.isEmpty()) {
-                try {
-                    condEntreg.await();
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-            return listaEntregados.remove(listaEntregados.size() - 1);
-        } finally {
-            lockEntreg.unlock();
-        }
-    }
-
-     /**
-     * Agrega un pedido a la lista de fallados.
      * @param pedido el pedido que ha fallado.
      */
     public void addListaFallidos(Pedido pedido) {
-        lockFall.lock();
-        try {
+        synchronized (lockFallidos) {
             listaFallidos.add(pedido);
-        } finally {
-            lockFall.unlock();
         }
     }
 
-    /*
-     * Agrega un pedido a la lista de entregados
-     * @param pedido el pedido que ha sido entregado.
+    /**
+     * Agrega un pedido a la lista de verificados.
+     * @param pedido el pedido que ha sido verificado.
      */
-
-     public void addListaVerificados(Pedido pedido) {
-        lockVerif.lock();
-        try {
+    public void addListaVerificados(Pedido pedido) {
+        synchronized (lockVerificados) {
             listaVerificados.add(pedido);
-        } finally {
-            lockVerif.unlock();
-        }   
+        }
     }
 
     /**
-     * Imprime la cantidad de pedidos en tránsito.
+     * Imprime la cantidad de pedidos en cada estado.
      */
     public void print() {
-        System.out.printf("\nCantidad pedidos en transito  %d\n ",listaTransito.size());
-        System.out.printf("\nCantidad pedidos fallidos  %d\n ",listaFallidos.size());
-        System.out.printf("\nCantidad pedidos entregados  %d\n ",listaEntregados.size());
-        System.out.printf("\nCantidad pedidos verificados  %d\n ",listaVerificados.size());
+        synchronized (lockTransito) {
+            System.out.printf("\nCantidad pedidos en tránsito: %d\n", sizeListaTransito());
+        }
+        synchronized (lockFallidos) {
+            System.out.printf("Cantidad pedidos fallidos: %d\n", sizeListaFallidos());
+        }
+        synchronized (lockEntregados) {
+            System.out.printf("Cantidad pedidos entregados: %d\n", sizeListaEntregados());
+        }
+        synchronized (lockVerificados) {
+            System.out.printf("Cantidad pedidos verificados: %d\n", sizeListaVerificados());
+        }
     }
 
-    /**
-     * Retorna el tamaño de la lista de pedidos en tránsito.
-     * @return cantidad de pedidos despachados exitosamente.
+      /**
+     * Retorna el tamaño de la lista de pedidos en tránsito, descontando los pedidos de tipo "poison".
+     * @return cantidad de pedidos despachados (excluyendo poisons).
      */
     public int sizeListaTransito() {
-        return listaTransito.size();
+        synchronized (lockTransito) {
+            int total = listaTransito.size();
+            int poisonCount = 0;
+            for (Pedido p : listaTransito) {
+                if (p.pedidoPoison()) {           
+                    poisonCount++;
+                }
+            }
+            return total - poisonCount;
+        }
     }
 
     /**
@@ -196,7 +178,9 @@ public class RegistrodePedidos {
      * @return cantidad de pedidos en preparación.
      */
     public int sizeListaPreparacion() {
-        return listaPreparacion.size();
+        synchronized (lockPreparacion) {
+            return listaPreparacion.size();
+        }
     }
 
     /**
@@ -204,7 +188,9 @@ public class RegistrodePedidos {
      * @return cantidad de pedidos fallidos.
      */
     public int sizeListaFallidos() {
-        return listaFallidos.size();
+        synchronized (lockFallidos) {
+            return listaFallidos.size();
+        }
     }
 
     /**
@@ -212,6 +198,26 @@ public class RegistrodePedidos {
      * @return cantidad de pedidos entregados.
      */
     public int sizeListaEntregados() {
-        return listaEntregados.size();
+        synchronized (lockEntregados) {
+            int total = listaEntregados.size();
+            int poisonCount = 0;
+            for (Pedido p : listaTransito) {
+                if (p.pedidoPoison()) {           
+                    poisonCount++;
+                }
+            }
+            return total - poisonCount;
+        }
     }
+
+    /**
+     * Retorna el tamaño de la lista de pedidos entregados.
+     * @return cantidad de pedidos entregados.
+     */
+    public int sizeListaVerificados() {
+        synchronized (lockEntregados) {
+            return listaVerificados.size();
+        }
+    }
+    
 }

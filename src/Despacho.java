@@ -28,7 +28,7 @@ public class Despacho implements Runnable {
         Pedido pedido = Registropedidos.getListaPreparacion();
         Random rnd = new Random();
 
-        sistema.getlockCasillero();
+   //     sistema.getlockCasillero();
         if (rnd.nextInt(100) < 15) { // 15% de fallas
             sistema.setCasilleroFueraServicio(pedido);
             pedido.setFallido();
@@ -69,7 +69,7 @@ public class Despacho implements Runnable {
         while (siguientePedido() < sistema.getTotalPedidos()) {
             despacharPedido();
             try {
-                Thread.sleep(0);
+                Thread.sleep(60);
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -79,7 +79,7 @@ public class Despacho implements Runnable {
         Pedido pedidoPoison = new Pedido(null, -1);
         pedidoPoison.setPoisonPill();
         try {
-            Thread.sleep(500);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

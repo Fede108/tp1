@@ -22,7 +22,7 @@ public class Main {
   public static void main(String[] args) {
       long startTime = System.currentTimeMillis();
 
-      SistemaAlmacenamiento sistemaAlmacenamiento = new SistemaAlmacenamiento(20);
+      SistemaAlmacenamiento sistemaAlmacenamiento = new SistemaAlmacenamiento(500);
       RegistrodePedidos registrodePedidos = new RegistrodePedidos();
       Preparacion preparacion = new Preparacion(sistemaAlmacenamiento, registrodePedidos);
       Despacho despacho = new Despacho(sistemaAlmacenamiento, registrodePedidos);
@@ -32,7 +32,7 @@ public class Main {
       Thread[] hilos = {
           new Thread(preparacion),
           new Thread(despacho),
-         new Thread(verificacion),
+          new Thread(verificacion),
           new Thread(preparacion),
           new Thread(despacho),
           new Thread(entrega),
@@ -95,7 +95,8 @@ public class Main {
         "Preparación: " + registro.sizeListaPreparacion() + " | " +
         "Tránsito: " + registro.sizeListaTransito() + " | " +
         "Entregados: " + registro.sizeListaEntregados() + " | " +
-        "Fallidos: " + registro.sizeListaFallidos();
+        "Fallidos: " + registro.sizeListaFallidos() + " | " +
+        "Verificados: " + registro.sizeListaVerificados();
     
           writer.write(linea);
           writer.newLine();

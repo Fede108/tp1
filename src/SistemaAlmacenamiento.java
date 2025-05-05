@@ -11,11 +11,12 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class SistemaAlmacenamiento {
     private ArrayList<Casillero> matriz;
-    private HashMap<Integer, Casillero> casillerosVisitados;
+    private int casillerosVisitados = 0;
+//    private HashMap<Integer, Casillero> casillerosVisitados;
     private Integer cantPedidos;
     private Integer totalPedidos;
 
-    private static final int N_CASILLEROS = 5;
+    private static final int N_CASILLEROS = 200;
 
     // Objeto lock dedicado para las secciones críticas
    // private final Object lockCasillero = new Object();
@@ -34,7 +35,7 @@ public class SistemaAlmacenamiento {
         }
         cantPedidos = 0;
         this.totalPedidos = totalPedidos;
-        casillerosVisitados = new HashMap<>();
+    //    casillerosVisitados = new HashMap<>();
     }
 
     /**
@@ -48,43 +49,30 @@ public class SistemaAlmacenamiento {
             int nroCasillero;
             Casillero casillero;
 
-            while (casillerosVisitados.size() == N_CASILLEROS) {
+            while (casillerosVisitados == N_CASILLEROS) {
                 log("CASILLEROS_LLENOS", null);
                 try {
                     casilleroLibre.await();    
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
                     e.printStackTrace();
                 }
             }
 
-            int casillerosFueraServicios = 0;
             while (true) {
                 nroCasillero = new Random().nextInt(N_CASILLEROS);
                 casillero = matriz.get(nroCasillero);
-                if (!casillerosVisitados.containsKey(nroCasillero) && casillero.estaVacio()) {
-                    casillerosVisitados.put(nroCasillero, casillero);
+                if (casillero.estaVacio()) {
+                  //  casillerosVisitados.put(nroCasillero, casillero);
+                    casillerosVisitados++;
                     casillero.ocupar();
                     break;
                 }
-
-                for (int i = 0; i < N_CASILLEROS; i++) {
-                    if (matriz.get(i).estaFueraServicio()) {
-                        casillerosFueraServicios++;
-                    }
-                }
-                if (casillerosFueraServicios == N_CASILLEROS) {
-                   log("CASILLEROS OUT OF SERVICE", null);
-                } 
-                    casillerosFueraServicios = 0;
-                
             }
 
             Pedido pedido = new Pedido(nroCasillero, ++cantPedidos);
             log("CASILLERO_OCUPADO ", pedido);
             return pedido;
         } catch (Exception e) {
-            // TODO: handle exception
             return null;
         } finally {
             lockCasillero.unlock();
@@ -101,9 +89,11 @@ public class SistemaAlmacenamiento {
      * @param pedido Pedido asociado al casillero a desocupar.
      */
     public void desocuparCasillero(Pedido pedido) {
+        lockCasillero.lock();
         try {
             matriz.get(pedido.getCasillero()).desocupar();
-            casillerosVisitados.remove(pedido.getCasillero());
+            casillerosVisitados--;
+        //    casillerosVisitados.remove(pedido.getCasillero());
             casilleroLibre.signalAll(); 
             log("CASILLERO_LIBERADO", pedido);
         } catch (Exception e) {
@@ -118,10 +108,11 @@ public class SistemaAlmacenamiento {
      * @param pedido Pedido asociado al casillero fallido.
      */
     public void setCasilleroFueraServicio(Pedido pedido) {
+            lockCasillero.lock();
             try {
                 matriz.get(pedido.getCasillero()).setFueraServicio();
                 log("PEDIDO_FALLIDO   ", pedido);
-                System.err.println(pedido.getCasillero());
+          //      System.err.println(pedido.getCasillero());
            //     casillerosVisitados.remove(pedido.getCasillero());    
             } catch (Exception e) {
                 // TODO: handle exception

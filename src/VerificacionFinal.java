@@ -53,7 +53,7 @@ public class VerificacionFinal implements Runnable {
         while (!finalizacion){
             VerificarPedido();
             try {
-                Thread.sleep(0);
+                Thread.sleep(60);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

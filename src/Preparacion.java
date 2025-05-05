@@ -23,7 +23,7 @@ public class Preparacion implements Runnable {
      */
     public void prepararPedido() {
         Pedido pedido = sistema.ocuparCasillero();
-        Registropedidos.getLockListaPreparacion();
+   //     Registropedidos.getLockListaPreparacion();
         Registropedidos.addListaPreparacion(pedido); 
         //sistema.releaseLockCasillero();  
     }
@@ -44,7 +44,7 @@ public class Preparacion implements Runnable {
         while (siguientePedido() < sistema.getTotalPedidos()) {
             prepararPedido();
             try {
-                Thread.sleep(0);
+                Thread.sleep(60);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

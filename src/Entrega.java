@@ -62,7 +62,7 @@ public class Entrega implements Runnable {
         while (!finalizacion){
             entregaPedido();
             try {
-                Thread.sleep(0);
+                Thread.sleep(60);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -71,7 +71,7 @@ public class Entrega implements Runnable {
         Pedido pedidoPoison = new Pedido(null, -1);
         pedidoPoison.setPoisonPill();
         try {
-            Thread.sleep(500);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
