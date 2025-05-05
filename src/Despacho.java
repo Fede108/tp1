@@ -67,7 +67,8 @@ public class Despacho implements Runnable {
         while (siguientePedido() < sistema.getTotalPedidos()) {
             despacharPedido();
             try {
-                Thread.sleep(60);
+                Random rnd = new Random();
+                Thread.sleep(rnd.nextInt(60, 120));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -83,6 +84,4 @@ public class Despacho implements Runnable {
 
         Registropedidos.addListaTransito(pedidoPoison);
     }
-
-   
 }

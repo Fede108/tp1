@@ -62,7 +62,8 @@ public class Entrega implements Runnable {
         while (!finalizacion){
             entregaPedido();
             try {
-                Thread.sleep(60);
+                Random rnd = new Random();
+                Thread.sleep(rnd.nextInt(90, 180));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

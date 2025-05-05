@@ -1,3 +1,5 @@
+import java.util.Random;
+
 /**
  * Clase Preparacion que simula el rol de productor.
  * Se encarga de generar pedidos y ocupar casilleros en el sistema.
@@ -42,7 +44,8 @@ public class Preparacion implements Runnable {
         while (siguientePedido() < sistema.getTotalPedidos()) {
             prepararPedido();
             try {
-                Thread.sleep(60);
+                Random rnd = new Random();
+                Thread.sleep(rnd.nextInt(90, 180));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

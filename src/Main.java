@@ -12,7 +12,6 @@ import java.io.IOException;
  * @author 
  */
 public class Main {
-
   /**
    * Punto de entrada del programa. Inicializa el sistema, lanza hilos productores
    * y consumidores, y registra el estado del sistema hasta que todos los hilos finalicen.

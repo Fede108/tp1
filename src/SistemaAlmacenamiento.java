@@ -16,7 +16,7 @@ public class SistemaAlmacenamiento {
 
     private static final int N_CASILLEROS = 200;
 
-    private ReentrantLock lockCasillero = new ReentrantLock(true);
+    private ReentrantLock lockCasillero = new ReentrantLock(false);
     private final Condition casilleroLibre = lockCasillero.newCondition();
   
 

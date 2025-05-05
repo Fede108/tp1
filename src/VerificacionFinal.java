@@ -46,14 +46,15 @@ public class VerificacionFinal implements Runnable {
 
 
      /**
-     * Ejecuta el hilo de despacho hasta completar la cantidad total de pedidos.
+     * Ejecuta el hilo de verificacion hasta completar la cantidad total de pedidos.
      */
     @Override
     public void run() {
         while (!finalizacion){
             VerificarPedido();
             try {
-                Thread.sleep(60);
+                Random rnd = new Random();
+                Thread.sleep(rnd.nextInt(60, 120));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

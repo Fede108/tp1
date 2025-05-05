@@ -1,0 +1,79 @@
+@startuml
+actor Usuario as U
+
+participant Main
+participant SistemaAlmacenamiento
+participant RegistrodePedidos
+participant Preparacion
+participant Despacho
+participant Entrega
+participant VerificacionFinal
+participant Pedido
+participant Casillero
+
+U -> Main: main(String[] args)
+activate Main
+Main -> SistemaAlmacenamiento: SistemaAlmacenamiento()
+Main -> RegistrodePedidos: RegistrodePedidos()
+Main -> Preparacion: Preparacion(SistemaAlmacenamiento, RegistrodePedidos)
+Main -> Despacho: Despacho(SistemaAlmacenamiento, RegistrodePedidos)
+Main -> Entrega: Entrega(RegistrodePedidos)
+Main -> VerificacionFinal: VerificacionFinal(RegistrodePedidos)
+
+Main -> Main: Crear hilos y start()
+
+group Preparar pedidos
+    loop Mientras no se cumpla el total
+        Preparacion -> SistemaAlmacenamiento: ocuparCasillero()
+        activate SistemaAlmacenamiento
+        SistemaAlmacenamiento -> Casillero: synchronized (lockCasillero)
+        SistemaAlmacenamiento -> Pedido: Crear Pedido
+        SistemaAlmacenamiento -> Casillero: ocupar()
+        deactivate SistemaAlmacenamiento
+        Preparacion -> RegistrodePedidos: addListaPreparacion(Pedido)
+    end
+end
+
+group Despachar pedidos
+    loop Mientras no se cumpla el total
+        Despacho -> RegistrodePedidos: getListaPreparacion()
+        activate RegistrodePedidos
+        RegistrodePedidos -> RegistrodePedidos: synchronized (lockPreparacion)
+        RegistrodePedidos -> Pedido: Remover Pedido
+        deactivate RegistrodePedidos
+        Despacho -> SistemaAlmacenamiento: desocuparCasillero(Pedido)
+        activate SistemaAlmacenamiento
+        SistemaAlmacenamiento -> Casillero: synchronized (lockCasillero)
+        SistemaAlmacenamiento -> Casillero: desocupar()
+        SistemaAlmacenamiento -> Preparacion: signalAll()
+        deactivate SistemaAlmacenamiento
+        Despacho -> RegistrodePedidos: addListaTransito(Pedido)
+    end
+end
+
+group Entregar pedidos
+    loop Mientras no se cumpla el total
+        Entrega -> RegistrodePedidos: getListaTransito()
+        activate RegistrodePedidos
+        RegistrodePedidos -> RegistrodePedidos: synchronized (lockTransito)
+        RegistrodePedidos -> Pedido: Remover Pedido
+        deactivate RegistrodePedidos
+        Entrega -> RegistrodePedidos: addListaEntregados(Pedido)
+    end
+end
+
+group Verificar pedidos
+    loop Mientras no se cumpla el total
+        VerificacionFinal -> RegistrodePedidos: getListaEntregados()
+        activate RegistrodePedidos
+        RegistrodePedidos -> RegistrodePedidos: synchronized (lockEntregados)
+        RegistrodePedidos -> Pedido: Remover Pedido
+        deactivate RegistrodePedidos
+        VerificacionFinal -> RegistrodePedidos: addListaVerificados(Pedido)
+    end
+end
+
+Main -> RegistrodePedidos: Imprimir estadísticas
+deactivate Main
+
+@enduml
