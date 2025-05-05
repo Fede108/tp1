@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Clase RegistrodePedidos que gestiona listas compartidas de pedidos en preparación y en tránsito.
@@ -54,7 +55,8 @@ public class RegistrodePedidos {
                     throw new RuntimeException("Interrupted while waiting for pedidos en preparación", e);
                 }
             }
-            return listaPreparacion.remove(listaPreparacion.size() - 1);
+            int indice = new Random().nextInt(listaPreparacion.size());
+            return listaPreparacion.remove(indice);
         }
     }
 
@@ -84,7 +86,8 @@ public class RegistrodePedidos {
                     throw new RuntimeException("Interrupted while waiting for pedidos en tránsito", e);
                 }
             }
-            return listaTransito.remove(listaTransito.size() - 1);
+            int indice = new Random().nextInt(listaTransito.size());
+            return listaTransito.remove(indice);
         }
     }
 
@@ -114,7 +117,8 @@ public class RegistrodePedidos {
                     throw new RuntimeException("Interrupted while waiting for pedidos entregados", e);
                 }
             }
-            return listaEntregados.remove(listaEntregados.size() - 1);
+            int indice = new Random().nextInt(listaEntregados.size());
+            return listaEntregados.remove(indice);
         }
     }
 
@@ -201,7 +205,7 @@ public class RegistrodePedidos {
         synchronized (lockEntregados) {
             int total = listaEntregados.size();
             int poisonCount = 0;
-            for (Pedido p : listaTransito) {
+            for (Pedido p : listaEntregados) {
                 if (p.pedidoPoison()) {           
                     poisonCount++;
                 }

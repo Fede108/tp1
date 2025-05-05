@@ -65,7 +65,7 @@ public class Main {
 
           Registro(startTime, sistemaAlmacenamiento, registrodePedidos, writer, false);
           try {
-              Thread.sleep(1000);
+              Thread.sleep(200);
           } catch (InterruptedException e) {
               e.printStackTrace();
           }
