@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -12,14 +11,11 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SistemaAlmacenamiento {
     private ArrayList<Casillero> matriz;
     private int casillerosVisitados = 0;
-//    private HashMap<Integer, Casillero> casillerosVisitados;
     private Integer cantPedidos;
     private Integer totalPedidos;
 
     private static final int N_CASILLEROS = 200;
 
-    // Objeto lock dedicado para las secciones críticas
-   // private final Object lockCasillero = new Object();
     private ReentrantLock lockCasillero = new ReentrantLock(true);
     private final Condition casilleroLibre = lockCasillero.newCondition();
   
@@ -35,7 +31,6 @@ public class SistemaAlmacenamiento {
         }
         cantPedidos = 0;
         this.totalPedidos = totalPedidos;
-    //    casillerosVisitados = new HashMap<>();
     }
 
     /**
@@ -62,7 +57,6 @@ public class SistemaAlmacenamiento {
                 nroCasillero = new Random().nextInt(N_CASILLEROS);
                 casillero = matriz.get(nroCasillero);
                 if (casillero.estaVacio()) {
-                  //  casillerosVisitados.put(nroCasillero, casillero);
                     casillerosVisitados++;
                     casillero.ocupar();
                     break;
@@ -79,10 +73,6 @@ public class SistemaAlmacenamiento {
         }
     }
 
-    public void getlockCasillero(){
-        lockCasillero.lock();
-    }
-
     /**
      * Método para desocupar un casillero previamente ocupado.
      * Notifica a hilos en espera de casilleros disponibles.
@@ -93,12 +83,10 @@ public class SistemaAlmacenamiento {
         try {
             matriz.get(pedido.getCasillero()).desocupar();
             casillerosVisitados--;
-        //    casillerosVisitados.remove(pedido.getCasillero());
             casilleroLibre.signalAll(); 
             log("CASILLERO_LIBERADO", pedido);
-        } catch (Exception e) {
-            // TODO: handle exception
-        } finally{
+        } 
+        finally{
             lockCasillero.unlock();
         }
     }
@@ -111,12 +99,9 @@ public class SistemaAlmacenamiento {
             lockCasillero.lock();
             try {
                 matriz.get(pedido.getCasillero()).setFueraServicio();
-                log("PEDIDO_FALLIDO   ", pedido);
-          //      System.err.println(pedido.getCasillero());
-           //     casillerosVisitados.remove(pedido.getCasillero());    
-            } catch (Exception e) {
-                // TODO: handle exception
-            } finally{
+                log("PEDIDO_FALLIDO   ", pedido);   
+            } 
+            finally{
                 lockCasillero.unlock();
             }
     }

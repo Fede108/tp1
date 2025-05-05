@@ -23,9 +23,7 @@ public class Preparacion implements Runnable {
      */
     public void prepararPedido() {
         Pedido pedido = sistema.ocuparCasillero();
-   //     Registropedidos.getLockListaPreparacion();
         Registropedidos.addListaPreparacion(pedido); 
-        //sistema.releaseLockCasillero();  
     }
 
     /**

@@ -24,11 +24,9 @@ public class Despacho implements Runnable {
      * Despacha un pedido, liberando el casillero o marcándolo como fuera de servicio en caso de error.
      */
     public void despacharPedido() {
-  //      sistema.getlockCasillero();
         Pedido pedido = Registropedidos.getListaPreparacion();
         Random rnd = new Random();
 
-   //     sistema.getlockCasillero();
         if (rnd.nextInt(100) < 15) { // 15% de fallas
             sistema.setCasilleroFueraServicio(pedido);
             pedido.setFallido();
@@ -71,7 +69,6 @@ public class Despacho implements Runnable {
             try {
                 Thread.sleep(60);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
