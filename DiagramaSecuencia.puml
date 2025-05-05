@@ -21,59 +21,79 @@ Main -> Entrega: Entrega(RegistrodePedidos)
 Main -> VerificacionFinal: VerificacionFinal(RegistrodePedidos)
 
 Main -> Main: Crear hilos y start()
-
-group Preparar pedidos
-    loop Mientras no se cumpla el total
-        Preparacion -> SistemaAlmacenamiento: ocuparCasillero()
-        activate SistemaAlmacenamiento
-        SistemaAlmacenamiento -> Casillero: synchronized (lockCasillero)
-        SistemaAlmacenamiento -> Pedido: Crear Pedido
-        SistemaAlmacenamiento -> Casillero: ocupar()
-        deactivate SistemaAlmacenamiento
-        Preparacion -> RegistrodePedidos: addListaPreparacion(Pedido)
-    end
-end
-
-group Despachar pedidos
-    loop Mientras no se cumpla el total
-        Despacho -> RegistrodePedidos: getListaPreparacion()
-        activate RegistrodePedidos
-        RegistrodePedidos -> RegistrodePedidos: synchronized (lockPreparacion)
-        RegistrodePedidos -> Pedido: Remover Pedido
-        deactivate RegistrodePedidos
-        Despacho -> SistemaAlmacenamiento: desocuparCasillero(Pedido)
-        activate SistemaAlmacenamiento
-        SistemaAlmacenamiento -> Casillero: synchronized (lockCasillero)
-        SistemaAlmacenamiento -> Casillero: desocupar()
-        SistemaAlmacenamiento -> Preparacion: signalAll()
-        deactivate SistemaAlmacenamiento
-        Despacho -> RegistrodePedidos: addListaTransito(Pedido)
-    end
-end
-
-group Entregar pedidos
-    loop Mientras no se cumpla el total
-        Entrega -> RegistrodePedidos: getListaTransito()
-        activate RegistrodePedidos
-        RegistrodePedidos -> RegistrodePedidos: synchronized (lockTransito)
-        RegistrodePedidos -> Pedido: Remover Pedido
-        deactivate RegistrodePedidos
-        Entrega -> RegistrodePedidos: addListaEntregados(Pedido)
-    end
-end
-
-group Verificar pedidos
-    loop Mientras no se cumpla el total
-        VerificacionFinal -> RegistrodePedidos: getListaEntregados()
-        activate RegistrodePedidos
-        RegistrodePedidos -> RegistrodePedidos: synchronized (lockEntregados)
-        RegistrodePedidos -> Pedido: Remover Pedido
-        deactivate RegistrodePedidos
-        VerificacionFinal -> RegistrodePedidos: addListaVerificados(Pedido)
-    end
-end
-
-Main -> RegistrodePedidos: Imprimir estadísticas
 deactivate Main
 
+par Procesos en paralelo
+
+    group Preparar pedidos
+        loop Mientras no se cumpla el total
+            Preparacion -> SistemaAlmacenamiento: ocuparCasillero()
+            activate SistemaAlmacenamiento
+            critical "lockCasillero"
+                SistemaAlmacenamiento -> Casillero: ocupar()
+            end critical
+            deactivate SistemaAlmacenamiento
+
+            critical "lockPreparacion"
+                Preparacion -> RegistrodePedidos: addListaPreparacion(Pedido)
+            end critical
+        end
+    end group
+
+    group Despachar pedidos
+        loop Mientras no se cumpla el total
+            Despacho -> RegistrodePedidos: getListaPreparacion()
+            activate RegistrodePedidos
+            critical "lockPreparacion"
+                RegistrodePedidos -> RegistrodePedidos: Remover Pedido
+            end critical
+            deactivate RegistrodePedidos
+
+            Despacho -> SistemaAlmacenamiento: desocuparCasillero(Pedido)
+            activate SistemaAlmacenamiento
+            critical "lockCasillero"
+                SistemaAlmacenamiento -> Casillero: desocupar()
+                SistemaAlmacenamiento -> Preparacion: signalAll()
+            end critical
+            deactivate SistemaAlmacenamiento
+
+            critical "lockTransito"
+                Despacho -> RegistrodePedidos: addListaTransito(Pedido)
+            end critical
+        end
+    end group
+
+    group Entregar pedidos
+        loop Mientras no se cumpla el total
+            Entrega -> RegistrodePedidos: getListaTransito()
+            activate RegistrodePedidos
+            critical "lockTransito"
+                RegistrodePedidos -> RegistrodePedidos: Remover Pedido
+            end critical
+            deactivate RegistrodePedidos
+
+            critical "lockEntregados"
+                Entrega -> RegistrodePedidos: addListaEntregados(Pedido)
+            end critical
+        end
+    end group
+
+    group Verificar pedidos
+        loop Mientras no se cumpla el total
+            VerificacionFinal -> RegistrodePedidos: getListaEntregados()
+            activate RegistrodePedidos
+            critical "lockEntregados"
+                RegistrodePedidos -> RegistrodePedidos: Remover Pedido
+            end critical
+            deactivate RegistrodePedidos
+
+            critical "lockVerificados"
+                VerificacionFinal -> RegistrodePedidos: addListaVerificados(Pedido)
+            end critical
+        end
+    end group
+
+end par
+
+Main -> RegistrodePedidos: Imprimir estadísticas
 @enduml
