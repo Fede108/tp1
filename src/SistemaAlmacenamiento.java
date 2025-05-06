@@ -152,4 +152,12 @@ public class SistemaAlmacenamiento {
                 (pedido != null ? pedido : ""));
         System.out.println(msg);
     }
+
+    /**
+     * Método para obtener la lista de casilleros (para procesar contadores).
+     * @return ArrayList de Casillero.
+     */
+    public ArrayList<Casillero> getMatrizCasilleros() {
+        return matriz;
+    }
 }

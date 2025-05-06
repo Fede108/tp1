@@ -1,6 +1,7 @@
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Clase principal que inicia el sistema de almacenamiento y gestión de pedidos.
@@ -111,7 +112,21 @@ public class Main {
               " Casilleros funcionales " + sistema.getCasillerosFuncionales() ;
               writer.write(linea);
               writer.newLine();
-              writer.flush();
+              ArrayList<Casillero> lista = sistema.getMatrizCasilleros();
+              for (int i = 0; i < 10; i++) {
+                StringBuilder row = new StringBuilder();
+                for (int j = 0; j < 20; j++) { 
+                    int index = i * 20 + j;
+                    if (lista.get(index).estaFueraServicio()) {
+                        row.append(String.format("%4s", "#"));
+                    } else{
+                        row.append(String.format("%4d", lista.get(index).Contador));
+                    }  
+                }
+                writer.write(row.toString());
+                writer.newLine();
+            }
+            writer.flush();
           } catch (IOException e) {
               e.printStackTrace();
           }
